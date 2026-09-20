@@ -209,7 +209,7 @@ export default function Register() {
           <View>
 
             <Text style={styles.brand}>
-              MENTALINK
+              ELO
             </Text>
 
             <Text style={styles.presentationTitle}>

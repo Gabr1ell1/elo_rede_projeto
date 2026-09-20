@@ -71,7 +71,7 @@ export default function Login() {
         >
           <View>
             <Text style={styles.brand}>
-              MENTALINK
+              ELO
             </Text>
 
             <Text style={styles.presentationTitle}>
@@ -184,82 +184,56 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-
-  /* =========================
-     BACKGROUND
-  ========================= */
-
   background: {
     flex: 1,
     backgroundColor: "#F4F7F6",
-
     justifyContent: "center",
     alignItems: "center",
-
     padding: 24,
-
     overflow: "hidden",
   },
 
-  /* =========================
-     DECORAÇÕES
-  ========================= */
-
   decorTop: {
     position: "absolute",
-
     width: 330,
     height: 180,
-
-    backgroundColor: "#DDEDEA",
-
     top: -90,
     left: 80,
-
     borderRadius: 100,
+    backgroundColor: "#DDEDEA",
   },
 
   decorBottom: {
     position: "absolute",
-
     width: 300,
     height: 170,
-
-    backgroundColor: "#E9B872",
-
     bottom: -80,
     right: 40,
-
     borderRadius: 100,
+    backgroundColor: "#E9B872",
   },
 
   decorMobile: {
     opacity: 0.7,
   },
 
-  /* =========================
-     CARD
-  ========================= */
-
+  // =========================================================
+  // CARD PRINCIPAL
+  // =========================================================
   card: {
     width: "92%",
     maxWidth: 1050,
     minHeight: 570,
-
-    backgroundColor: "#FFFFFF",
-
-    borderRadius: 10,
-
     flexDirection: "row",
-
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
     overflow: "hidden",
-
+    // Android
     elevation: 8,
-
+    // iOS / Web
     shadowColor: "#000",
     shadowOpacity: 0.12,
     shadowRadius: 20,
-
     shadowOffset: {
       width: 0,
       height: 8,
@@ -269,70 +243,63 @@ const styles = StyleSheet.create({
   cardMobile: {
     width: "100%",
     minHeight: 0,
-
     flexDirection: "column",
   },
 
-  /* =========================
-     LADO ESQUERDO
-  ========================= */
-
+  // =========================================================
+  // LADO DE APRESENTAÇÃO
+  // =========================================================
   presentation: {
     flex: 1,
-
     backgroundColor: "#4F8F8A",
-
     paddingHorizontal: 55,
     paddingVertical: 55,
-
     justifyContent: "space-between",
   },
 
   presentationMobile: {
     paddingHorizontal: 30,
     paddingVertical: 35,
-
     minHeight: 280,
   },
 
+  // =========================================================
+  // MARCA
+  // =========================================================
+
   brand: {
     color: "#FFFFFF",
-
     fontSize: 16,
     fontWeight: "700",
-
     letterSpacing: 3,
-
     marginBottom: 45,
   },
 
+  // =========================================================
+  // TEXTOS DA APRESENTAÇÃO
+  // =========================================================
+
   presentationTitle: {
     color: "#FFFFFF",
-
     fontSize: 32,
     fontWeight: "700",
-
     lineHeight: 42,
-
     marginBottom: 20,
   },
 
   presentationText: {
     color: "#E8F3F1",
-
     fontSize: 15,
     lineHeight: 24,
-
     maxWidth: 400,
   },
 
-  /* =========================
-     ILUSTRAÇÃO
-  ========================= */
+  // =========================================================
+  // ILUSTRAÇÃO
+  // =========================================================
 
   imagePlaceholder: {
     height: 170,
-
     justifyContent: "center",
     alignItems: "center",
   },
@@ -342,16 +309,13 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 
-  /* =========================
-     FORMULÁRIO
-  ========================= */
-
+  // ========================================================
+  // ÁREA DO FORMULÁRIO
+  // =========================================================
   formContainer: {
     flex: 1,
-
     paddingHorizontal: 60,
     paddingVertical: 55,
-
     justifyContent: "center",
   },
 
@@ -360,122 +324,90 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
 
+  // =========================================================
+  // CABEÇALHO DO FORMULÁRIO
+  // =========================================================
   welcome: {
     color: "#4F8F8A",
-
     fontSize: 13,
     fontWeight: "700",
-
     letterSpacing: 2,
-
     marginBottom: 10,
   },
 
   formTitle: {
     color: "#29413F",
-
     fontSize: 28,
     fontWeight: "700",
-
     marginBottom: 8,
   },
 
   formSubtitle: {
     color: "#71807E",
-
     fontSize: 14,
-
     marginBottom: 35,
   },
-
-  /* =========================
-     INPUTS
-  ========================= */
 
   inputGroup: {
     marginBottom: 20,
   },
-
-  /* =========================
-     ERRO
-  ========================= */
-
   error: {
     color: "#C95C5C",
-
     fontSize: 13,
-
     marginBottom: 10,
   },
 
-  /* =========================
-     ESQUECI SENHA
-  ========================= */
-
   forgotButton: {
     alignSelf: "flex-end",
-
     marginTop: 2,
     marginBottom: 25,
   },
 
   forgotText: {
     color: "#4F8F8A",
-
     fontSize: 13,
     fontWeight: "600",
   },
 
-  /* =========================
-     BOTÃO
-  ========================= */
+  // =========================================================
+  // BOTÃO ENTRAR
+  // =========================================================
 
   loginButton: {
     height: 52,
-
     backgroundColor: "#4F8F8A",
-
     borderRadius: 26,
-
     justifyContent: "center",
     alignItems: "center",
-
     elevation: 2,
   },
 
   loginButtonText: {
     color: "#FFFFFF",
-
     fontSize: 13,
     fontWeight: "700",
-
     letterSpacing: 2,
   },
 
-  /* =========================
-     CADASTRO
-  ========================= */
+  // =========================================================
+  // CADASTRO
+  // =========================================================
 
   registerContainer: {
     flexDirection: "row",
-
     justifyContent: "center",
     alignItems: "center",
-
     marginTop: 30,
-
     gap: 5,
   },
 
   registerText: {
     color: "#71807E",
-
     fontSize: 13,
   },
 
   registerLink: {
     color: "#4F8F8A",
-
     fontSize: 13,
     fontWeight: "700",
   },
