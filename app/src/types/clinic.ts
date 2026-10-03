@@ -15,6 +15,9 @@ export type Psychologist = {
     whatsapp?: string;
     email?: string;
     visibleInNetwork?: boolean;
+    // O status representa a etapa demonstrativa de conferência do CRP.
+    crp?: string;
+    statusCrp: 'SEM_ENVIO' | 'AGUARDANDO' | 'VERIFICADO';
 };
 
 export type AppointmentStatus = "PENDING" | "CONFIRMED" | "CANCELLED";
@@ -41,4 +44,6 @@ export type Appointment = {
     psychologistName: string;
     date: string;
     status: AppointmentStatus;
+    // O endereço demonstrativo da chamada só existe após confirmar a consulta.
+    linkConsulta?: string;
 };

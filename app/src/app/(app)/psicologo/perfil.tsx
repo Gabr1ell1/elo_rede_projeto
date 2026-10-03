@@ -22,6 +22,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../../context/AuthContext";
 import { getPsychologistById, updatePsychologistProfile } from "../../../services/api";
+import { Psychologist } from "../../../types/clinic";
 import { Avatar } from "../../../components/avatar";
 import { COLORS } from "../../../constants/cores";
 // A tela usa validações comuns e apresenta erros pelo alerta compartilhado.
@@ -62,6 +63,8 @@ export default function PsychologistProfileScreen() {
     const [email, setEmail] = useState("");
     // Este estado controla se o perfil aparece na rede de psicólogos.
     const [visivelNaRede, setVisivelNaRede] = useState(false);
+    // Este estado apresenta no perfil o estado de verificação do CRP.
+    const [statusCrp, setStatusCrp] = useState<Psychologist["statusCrp"]>("SEM_ENVIO");
 
     const username = (user?.username ?? "").trim();
 
@@ -80,6 +83,7 @@ export default function PsychologistProfileScreen() {
                     setWhatsapp(p.whatsapp ?? "");
                     setEmail(p.email ?? "");
                     setVisivelNaRede(p.visibleInNetwork === true);
+                    setStatusCrp(p.statusCrp);
                 }
             })
             .catch((erro) => mostrarErro("Erro ao carregar perfil", motivoDoErro(erro)))
@@ -190,6 +194,10 @@ export default function PsychologistProfileScreen() {
                             <Ionicons name="medkit-outline" size={14} color={COLORS.primaryDark} />
                             <Text style={styles.chipText}>Psicólogo(a)</Text>
                         </View>
+                        <Pressable onPress={() => router.push("/psicologo/verificacao" as any)} style={({ pressed }) => [styles.seloCrp, pressed && styles.pressed]}>
+                            <Text style={styles.textoSeloCrp}>{statusCrp === "VERIFICADO" ? "CRP verificado" : statusCrp === "AGUARDANDO" ? "Aguardando confirmação" : "Documentação não enviada"}</Text>
+                            <Ionicons name="chevron-forward" size={15} color={COLORS.primaryDark} />
+                        </Pressable>
                     </View>
 
                     {/* DADOS PROFISSIONAIS */}
@@ -519,6 +527,9 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: "600"
     },
+    // Este selo abre a tela onde o profissional pode acompanhar ou enviar seu CRP.
+    seloCrp: { flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 7, paddingHorizontal: 12, borderRadius: 999, backgroundColor: COLORS.primaryLight },
+    textoSeloCrp: { color: COLORS.primaryDark, fontSize: 12, fontWeight: "700" },
 
     // ===== FORMULÁRIO =====
     label: {

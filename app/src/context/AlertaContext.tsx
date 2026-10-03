@@ -1,7 +1,7 @@
 // Para que serve este arquivo: Compartilha a abertura e o fechamento do alerta de erro.
 // Onde é usado: O provider envolve o app e as telas chamam useAlerta().mostrarErro().
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 import { AlertaErro } from "../components/alerta-erro";
 import axios from "axios";
 
@@ -15,11 +15,11 @@ export function AlertaProvider({ children }: { children: React.ReactNode }) {
     const [visivel, setVisivel] = useState(false);
 
     // Recebe título e motivo e abre o modal. Exemplo: mostrarErro("Erro de login", "Senha inválida").
-    function mostrarErro(novoTitulo: string, novoMotivo: string) {
+    const mostrarErro = useCallback((novoTitulo: string, novoMotivo: string) => {
         setTitulo(novoTitulo);
         setMensagem(novoMotivo);
         setVisivel(true);
-    }
+    }, []);
 
     // Fecha o alerta quando o usuário toca no fundo, no X ou usa voltar no Android.
     function fecharErro() { setVisivel(false); }

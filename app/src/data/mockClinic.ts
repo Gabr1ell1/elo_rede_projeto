@@ -23,6 +23,7 @@ const PSYCHOLOGISTS: Psychologist[] = [
         whatsapp: "11987654321",
         email: "ana.souza@elo.exemplo",
         visibleInNetwork: true,
+        statusCrp: "VERIFICADO",
         availableSlots: [
             "2026-10-02T14:00:00",
             "2026-10-02T15:00:00",
@@ -41,6 +42,7 @@ const PSYCHOLOGISTS: Psychologist[] = [
         whatsapp: "11976543210",
         email: "marcos.lima@elo.exemplo",
         visibleInNetwork: true,
+        statusCrp: "SEM_ENVIO",
         availableSlots: ["2026-10-02T10:00:00", "2026-10-05T16:00:00"]
     },
     {
@@ -55,6 +57,7 @@ const PSYCHOLOGISTS: Psychologist[] = [
         whatsapp: "11965432109",
         email: "camila.rocha@elo.exemplo",
         visibleInNetwork: false,
+        statusCrp: "VERIFICADO",
         availableSlots: ["2026-10-03T11:00:00"]
     }
 ];
@@ -127,10 +130,22 @@ export async function mockUpdatePsychologistProfile(id: string, changes: Pick<Ps
 export async function mockGarantirPerfilPsicologo(userId: string): Promise<Psychologist> {
     let item = PSYCHOLOGISTS.find((entrada) => entrada.userId === userId || entrada.id === userId);
     if (!item) {
-        item = { id: userId, userId, name: userId, specialty: "", price: 0, bio: "", availableSlots: [] };
+        item = { id: userId, userId, name: userId, specialty: "", price: 0, bio: "", availableSlots: [], statusCrp: "SEM_ENVIO" };
         PSYCHOLOGISTS.push(item);
     }
     return delay(item);
+}
+
+// Recebe o userId e um CRP; devolve o perfil em espera e simula verificação após cinco segundos. Exemplo: "06/12345".
+export async function mockEnviarCrp(userId: string, crp: string): Promise<Psychologist> {
+    const perfil = await mockGarantirPerfilPsicologo(userId);
+    perfil.crp = crp;
+    perfil.statusCrp = "AGUARDANDO";
+    setTimeout(() => {
+        const atual = PSYCHOLOGISTS.find((entrada) => entrada.userId === userId);
+        if (atual?.statusCrp === "AGUARDANDO" && atual.crp === crp) atual.statusCrp = "VERIFICADO";
+    }, 5000); // Cinco segundos aceleram a demonstração; esta verificação não consulta um CRP real.
+    return delay(perfil);
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.

@@ -23,7 +23,8 @@ import {
     mockUploadAvatar,
     mockGetAvatar,
     mockUpdatePsychologistProfile,
-    mockBuscarRedeDePsicologos
+    mockBuscarRedeDePsicologos,
+    mockEnviarCrp
 } from '../data/mockClinic';
 
 // USE_MOCK: liga o mock de TUDO (login + clínica), sem backend.
@@ -106,6 +107,13 @@ export async function updatePsychologistProfile(id: string, changes: Pick<Psycho
     }
     if (USE_MOCK_CLINIC) return mockUpdatePsychologistProfile(id, changes);
     const response = await clinicApi.put('/psychologists/me', changes);
+    return response.data as Psychologist;
+}
+
+// Recebe o usuário e o CRP; devolve o perfil com status aguardando. Exemplo: "06/12345".
+export async function enviarCrp(userId: string, crp: string): Promise<Psychologist> {
+    if (USE_MOCK_CLINIC) return mockEnviarCrp(userId, crp);
+    const response = await clinicApi.put('/psychologists/me/crp', { crp });
     return response.data as Psychologist;
 }
 
