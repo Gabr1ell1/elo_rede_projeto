@@ -97,7 +97,10 @@ export async function mockGetPsychologistById(
     id: string,
     requesterUserId?: string
 ): Promise<Psychologist | undefined> {
-    const psicologo = PSYCHOLOGISTS.find((p) => p.id === id || p.userId === id);
+    // Uma consulta feita pelo próprio psicólogo prepara seu perfil vazio se necessário.
+    const psicologo = requesterUserId === id
+        ? await mockGarantirPerfilPsicologo(id)
+        : PSYCHOLOGISTS.find((p) => p.id === id || p.userId === id);
     if (!psicologo) return delay(undefined);
     // O próprio profissional pode consultar os dados que preencheu no perfil.
     if (requesterUserId === psicologo.userId) return delay({ ...psicologo });
@@ -114,9 +117,19 @@ export async function mockBuscarRedeDePsicologos(idUsuarioAtual: string): Promis
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockUpdatePsychologistProfile(id: string, changes: Pick<Psychologist, 'specialty' | 'price' | 'bio' | 'yearsOfExperience' | 'approach' | 'whatsapp' | 'email' | 'visibleInNetwork'>) {
-    const item = PSYCHOLOGISTS.find((entry) => entry.userId === id || entry.id === id);
-    if (!item) throw new Error('Perfil profissional não encontrado.');
+    // A atualização usa o perfil existente ou cria a base com o mesmo userId.
+    const item = await mockGarantirPerfilPsicologo(id);
     Object.assign(item, changes);
+    return delay(item);
+}
+
+// Recebe o identificador do usuário e devolve um perfil existente ou vazio. Exemplo: "psi-novo".
+export async function mockGarantirPerfilPsicologo(userId: string): Promise<Psychologist> {
+    let item = PSYCHOLOGISTS.find((entrada) => entrada.userId === userId || entrada.id === userId);
+    if (!item) {
+        item = { id: userId, userId, name: userId, specialty: "", price: 0, bio: "", availableSlots: [] };
+        PSYCHOLOGISTS.push(item);
+    }
     return delay(item);
 }
 

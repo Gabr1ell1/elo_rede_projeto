@@ -3,6 +3,8 @@
 
 // Estes dados simulam usuários para testar login e cadastro sem o backend.
 import { AuthRequest, RegisterRequest, SessionUser } from "../types/auth";
+// O cadastro mock também prepara o perfil clínico dos novos psicólogos.
+import { mockGarantirPerfilPsicologo } from "./mockClinic";
 
 type FakeUserRecord = {
     password: string;
@@ -50,6 +52,9 @@ export async function mockRegister(data: RegisterRequest): Promise<void> {
         password: data.password,
         user: { userId, username: data.username, role: data.role }
     };
+
+    // Usa o mesmo userId no cadastro e no perfil profissional.
+    if (data.role === "PSYCHOLOGIST") await mockGarantirPerfilPsicologo(userId);
 
     await delay(undefined);
 }
