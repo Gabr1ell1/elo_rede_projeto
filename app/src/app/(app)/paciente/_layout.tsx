@@ -1,32 +1,31 @@
-// Para que serve este arquivo: Apresenta uma tela ou layout; o Expo Router usa a pasta para organizar as rotas.
-// Onde ele é usado: src/app/(app)/paciente/_layout.tsx é importado pelas telas ou componentes correspondentes.
-
-// Este layout limita a área do paciente ao papel PATIENT.
-import { Redirect, Slot, usePathname } from "expo-router";
+import { Redirect, Slot } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import { useAuth } from "../../../context/AuthContext";
 
-// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Guard do grupo do paciente: só cuida do papel (role).
+// "Está logado ou não" é do layout raiz (Stack.Protected).
 export default function PatientLayout() {
     const { isAuthenticated, isLoading, user } = useAuth();
-    const pathname = usePathname();
 
-    if (isLoading) {
-        return (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <ActivityIndicator />
-            </View>
-        );
-    }
+    // Enquanto carrega o login, não decide nada.
+    if (isLoading || (isAuthenticated && !user?.role)) return <Loading />;
 
-    if (!isAuthenticated) {
-        return pathname === "/" ? <Slot /> : <Redirect href="/(auth)" />;
-    }
+    // Deslogado: o layout raiz já está trocando de grupo.
+    if (!isAuthenticated || !user) return null;
 
-    // Psicólogo tentando acessar rota de paciente -> manda pro dashboard dele
-    if (user?.role !== "PATIENT") {
-        return pathname === "/psicologo" ? <Slot /> : <Redirect href="/psicologo" />;
+    // Psicólogo caiu na área do paciente: manda para a área dele.
+    // Não precisa comparar pathname, porque /psicologo fica fora deste grupo.
+    if (user.role === "PSYCHOLOGIST") {
+        return <Redirect href="/psicologo" />;
     }
 
     return <Slot />;
+}
+
+function Loading() {
+    return (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ActivityIndicator />
+        </View>
+    );
 }

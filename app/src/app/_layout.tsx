@@ -1,10 +1,6 @@
-// Para que serve este arquivo: Apresenta uma tela ou layout; o Expo Router usa a pasta para organizar as rotas.
-// Onde ele é usado: src/app/_layout.tsx é importado pelas telas ou componentes correspondentes.
-
 import { AuthProvider, useAuth } from "@/src/context/AuthContext";
-// O provider torna os erros acessíveis a todas as rotas.
 import { AlertaProvider } from "@/src/context/AlertaContext";
-import { Slot, useSegments } from "expo-router";
+import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { TelaAbertura } from "@/src/components/tela-abertura";
 import * as SplashScreen from "expo-splash-screen";
@@ -12,20 +8,36 @@ import { StatusBar } from "expo-status-bar";
 
 void SplashScreen.preventAutoHideAsync();
 
-// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 function AppContent() {
-    const { isLoading } = useAuth();
-    const segments = useSegments();
-// Este efeito sincroniza a tela com dados, autenticacao ou ciclo de vida do componente.
+    // isAuthenticated diz se a pessoa já fez login; isLoading, se ainda está verificando.
+    const { isAuthenticated, isLoading } = useAuth();
+
+    // Esconde a splash nativa assim que a verificação de login termina.
     useEffect(() => {
         if (!isLoading) void SplashScreen.hideAsync();
     }, [isLoading]);
 
+    // Enquanto verifica o login, não decide rota nenhuma (evita o loop).
     if (isLoading) return <TelaAbertura />;
-    return <><StatusBar style={segments[0] === "(auth)" ? "dark" : "light"} /><Slot /></>;
+
+    return (
+        <>
+            <StatusBar style={isAuthenticated ? "light" : "dark"} />
+            <Stack screenOptions={{ headerShown: false }}>
+                {/* Só quem está logado acessa o grupo (app) */}
+                <Stack.Protected guard={isAuthenticated}>
+                    <Stack.Screen name="(app)" />
+                </Stack.Protected>
+
+                {/* Só quem NÃO está logado acessa o grupo (auth) */}
+                <Stack.Protected guard={!isAuthenticated}>
+                    <Stack.Screen name="(auth)" />
+                </Stack.Protected>
+            </Stack>
+        </>
+    );
 }
 
-// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function RootLayout() {
     return (
         <AlertaProvider>

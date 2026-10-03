@@ -135,7 +135,7 @@ export default function RedeDePsicologos() {
             </View>
 
             <Text style={styles.subtitle}>
-                Converse com outros psicólogos e conheça a abordagem de cada um
+                Converse com outros psicólogos e obtenha seus primeiros pacientes.
             </Text>
 
             {/* Este campo procura colegas por nome, especialidade ou abordagem. */}

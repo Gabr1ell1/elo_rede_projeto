@@ -43,7 +43,7 @@ export default function Login() {
       password,
     });
 
-    if (!result.ok) {
+    if (!result.ok && !result.errorAlreadyShown) {
       mostrarErro("Erro de login", result.error ?? "Usuário ou senha inválidos.");
     }
 
