@@ -6,12 +6,16 @@ import {
   useWindowDimensions,
   View,
   Image,
+  ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import { router } from "expo-router";
 import { AuthInput } from "../../components/entrada-autenticacao";
 import { useAuth } from "../../context/AuthContext";
+import { COLORS } from "../../constants/cores";
+
+const LOGO = require("../../../assets/images/elo-logo-branca.png");
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -55,7 +59,8 @@ export default function Login() {
         ]}
       />
 
-      {/* CARD PRINCIPAL */}
+      {/* O cartão rola quando o teclado reduz a altura disponível no celular. */}
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingVertical: 12 }} keyboardShouldPersistTaps="handled">
       <View
         style={[
           styles.card,
@@ -73,9 +78,7 @@ export default function Login() {
           ]}
         >
           <View>
-            <Text style={styles.brand}>
-              ELO
-            </Text>
+            <Image source={LOGO} style={styles.brandLogo} resizeMode="contain" accessibilityLabel="Elo" />
 
             <Text style={styles.presentationTitle}>
               Conectando pessoas
@@ -144,7 +147,7 @@ export default function Login() {
 
           {/* ERRO */}
           {error ? (
-            <Text style={styles.error}>
+            <Text style={styles.errorBox}>
               {error}
             </Text>
           ) : null}
@@ -158,7 +161,7 @@ export default function Login() {
 
           {/* BOTÃO */}
           <Pressable
-            style={styles.loginButton}
+            style={({ pressed }) => [styles.loginButton, pressed && styles.pressed]}
             onPress={handleLogin}
           >
             <Text style={styles.loginButtonText}>
@@ -183,6 +186,7 @@ export default function Login() {
           </View>
         </View>
       </View>
+      </ScrollView>
     </View>
     </KeyboardAvoidingView>
   );
@@ -191,7 +195,7 @@ export default function Login() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    backgroundColor: "#F4F7F6",
+    backgroundColor: COLORS.background,
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -205,7 +209,7 @@ const styles = StyleSheet.create({
     top: -90,
     left: 80,
     borderRadius: 100,
-    backgroundColor: "#DDEDEA",
+    backgroundColor: COLORS.primaryLight,
   },
 
   decorBottom: {
@@ -215,7 +219,7 @@ const styles = StyleSheet.create({
     bottom: -80,
     right: 40,
     borderRadius: 100,
-    backgroundColor: "#E9B872",
+    backgroundColor: COLORS.accent,
   },
 
   decorMobile: {
@@ -230,7 +234,7 @@ const styles = StyleSheet.create({
     maxWidth: 1050,
     minHeight: 570,
     flexDirection: "row",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: COLORS.card,
     borderRadius: 10,
     overflow: "hidden",
     // Android
@@ -256,7 +260,7 @@ const styles = StyleSheet.create({
   // =========================================================
   presentation: {
     flex: 1,
-    backgroundColor: "#4F8F8A",
+    backgroundColor: COLORS.primary,
     paddingHorizontal: 55,
     paddingVertical: 55,
     justifyContent: "space-between",
@@ -272,20 +276,14 @@ const styles = StyleSheet.create({
   // MARCA
   // =========================================================
 
-  brand: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 3,
-    marginBottom: 45,
-  },
+  brandLogo: { width: 100, height: 42, marginBottom: 32 },
 
   // =========================================================
   // TEXTOS DA APRESENTAÇÃO
   // =========================================================
 
   presentationTitle: {
-    color: "#FFFFFF",
+    color: COLORS.card,
     fontSize: 32,
     fontWeight: "700",
     lineHeight: 42,
@@ -293,7 +291,7 @@ const styles = StyleSheet.create({
   },
 
   presentationText: {
-    color: "#E8F3F1",
+    color: COLORS.primaryLight,
     fontSize: 15,
     lineHeight: 24,
     maxWidth: 400,
@@ -333,7 +331,7 @@ const styles = StyleSheet.create({
   // CABEÇALHO DO FORMULÁRIO
   // =========================================================
   welcome: {
-    color: "#4F8F8A",
+    color: COLORS.primary,
     fontSize: 13,
     fontWeight: "700",
     letterSpacing: 2,
@@ -341,14 +339,14 @@ const styles = StyleSheet.create({
   },
 
   formTitle: {
-    color: "#29413F",
+    color: COLORS.text,
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 8,
   },
 
   formSubtitle: {
-    color: "#71807E",
+    color: COLORS.textSecondary,
     fontSize: 14,
     marginBottom: 35,
   },
@@ -357,10 +355,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   error: {
-    color: "#C95C5C",
+    color: COLORS.error,
     fontSize: 13,
     marginBottom: 10,
   },
+  errorBox: { color: COLORS.error, fontSize: 13, marginBottom: 10, padding: 12, borderRadius: 12, backgroundColor: "rgba(201, 92, 92, 0.12)" },
+  pressed: { opacity: 0.82, transform: [{ scale: 0.99 }] },
 
   forgotButton: {
     alignSelf: "flex-end",
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   },
 
   forgotText: {
-    color: "#4F8F8A",
+    color: COLORS.primary,
     fontSize: 13,
     fontWeight: "600",
   },
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
 
   loginButton: {
     height: 52,
-    backgroundColor: "#4F8F8A",
+    backgroundColor: COLORS.primary,
     borderRadius: 26,
     justifyContent: "center",
     alignItems: "center",
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   },
 
   loginButtonText: {
-    color: "#FFFFFF",
+    color: COLORS.card,
     fontSize: 13,
     fontWeight: "700",
     letterSpacing: 2,
@@ -407,12 +407,12 @@ const styles = StyleSheet.create({
   },
 
   registerText: {
-    color: "#71807E",
+    color: COLORS.textSecondary,
     fontSize: 13,
   },
 
   registerLink: {
-    color: "#4F8F8A",
+    color: COLORS.primary,
     fontSize: 13,
     fontWeight: "700",
   },

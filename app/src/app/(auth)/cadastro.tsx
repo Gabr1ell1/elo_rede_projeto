@@ -7,6 +7,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   Image,
+  ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -14,6 +15,9 @@ import { router } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 import { AuthInput } from "../../components/entrada-autenticacao";
 import { Role } from "../../types/auth";
+import { COLORS } from "../../constants/cores";
+
+const LOGO = require("../../../assets/images/elo-logo-branca.png");
 
 
 export default function Register() {
@@ -66,7 +70,8 @@ export default function Register() {
         ]}
       />
 
-      {/* CARD */}
+      {/* O cartão rola quando o teclado reduz a altura disponível no celular. */}
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingVertical: 12 }} keyboardShouldPersistTaps="handled">
       <View
         style={[
           styles.card,
@@ -155,7 +160,7 @@ export default function Register() {
           {/* ERRO */}
 
           {error ? (
-            <Text style={styles.error}>
+            <Text style={styles.errorBox}>
               {error}
             </Text>
           ) : null}
@@ -171,7 +176,7 @@ export default function Register() {
           {/* BOTÃO */}
 
           <Pressable
-            style={styles.registerButton}
+            style={({ pressed }) => [styles.registerButton, pressed && styles.pressed]}
             onPress={handleRegister}
           >
             <Text style={styles.registerButtonText}>
@@ -212,9 +217,7 @@ export default function Register() {
 
           <View>
 
-            <Text style={styles.brand}>
-              ELO
-            </Text>
+            <Image source={LOGO} style={styles.brandLogo} resizeMode="contain" accessibilityLabel="Elo" />
 
             <Text style={styles.presentationTitle}>
               Conectando pessoas
@@ -236,6 +239,7 @@ export default function Register() {
           </View>
         </View>
       </View>
+      </ScrollView>
     </View>
     </KeyboardAvoidingView>
   );
@@ -280,7 +284,7 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
 
-    backgroundColor: "#F4F7F6",
+    backgroundColor: COLORS.background,
 
     justifyContent: "center",
     alignItems: "center",
@@ -300,7 +304,7 @@ const styles = StyleSheet.create({
     width: 330,
     height: 180,
 
-    backgroundColor: "#DDEDEA",
+    backgroundColor: COLORS.primaryLight,
 
     top: -90,
     left: 80,
@@ -314,7 +318,7 @@ const styles = StyleSheet.create({
     width: 300,
     height: 170,
 
-    backgroundColor: "#E9B872",
+    backgroundColor: COLORS.accent,
 
     bottom: -80,
     right: 40,
@@ -337,7 +341,7 @@ const styles = StyleSheet.create({
 
     minHeight: 650,
 
-    backgroundColor: "#FFFFFF",
+    backgroundColor: COLORS.card,
 
     borderRadius: 10,
 
@@ -388,7 +392,7 @@ const styles = StyleSheet.create({
   },
 
   welcome: {
-    color: "#4F8F8A",
+    color: COLORS.primary,
 
     fontSize: 13,
 
@@ -400,7 +404,7 @@ const styles = StyleSheet.create({
   },
 
   formTitle: {
-    color: "#29413F",
+    color: COLORS.text,
 
     fontSize: 28,
 
@@ -410,7 +414,7 @@ const styles = StyleSheet.create({
   },
 
   formSubtitle: {
-    color: "#71807E",
+    color: COLORS.textSecondary,
 
     fontSize: 14,
 
@@ -430,7 +434,7 @@ const styles = StyleSheet.create({
   ========================= */
 
   roleLabel: {
-    color: "#526562",
+    color: COLORS.text,
 
     fontSize: 13,
 
@@ -456,7 +460,7 @@ const styles = StyleSheet.create({
 
     borderWidth: 1,
 
-    borderColor: "#BFCFCC",
+    borderColor: COLORS.border,
 
     borderRadius: 8,
 
@@ -464,19 +468,19 @@ const styles = StyleSheet.create({
   },
 
   roleOptionSelected: {
-    backgroundColor: "#4F8F8A",
+    backgroundColor: COLORS.primary,
 
-    borderColor: "#4F8F8A",
+    borderColor: COLORS.primary,
   },
 
   roleText: {
-    color: "#526562",
+    color: COLORS.text,
 
     fontSize: 13,
   },
 
   roleTextSelected: {
-    color: "#FFFFFF",
+    color: COLORS.card,
 
     fontWeight: "600",
 
@@ -488,7 +492,7 @@ const styles = StyleSheet.create({
   ========================= */
 
   error: {
-    color: "#C95C5C",
+    color: COLORS.error,
 
     fontSize: 13,
 
@@ -496,9 +500,11 @@ const styles = StyleSheet.create({
 
     marginBottom: 10,
   },
+  errorBox: { color: COLORS.error, fontSize: 13, marginBottom: 10, padding: 12, borderRadius: 12, backgroundColor: "rgba(201, 92, 92, 0.12)" },
+  pressed: { opacity: 0.82, transform: [{ scale: 0.99 }] },
 
   success: {
-    color: "#2E7D32",
+    color: COLORS.primaryDark,
 
     fontSize: 13,
 
@@ -514,7 +520,7 @@ const styles = StyleSheet.create({
   registerButton: {
     height: 52,
 
-    backgroundColor: "#4F8F8A",
+    backgroundColor: COLORS.primary,
 
     borderRadius: 26,
 
@@ -528,7 +534,7 @@ const styles = StyleSheet.create({
   },
 
   registerButtonText: {
-    color: "#FFFFFF",
+    color: COLORS.card,
 
     fontSize: 13,
 
@@ -554,13 +560,13 @@ const styles = StyleSheet.create({
   },
 
   loginText: {
-    color: "#71807E",
+    color: COLORS.textSecondary,
 
     fontSize: 13,
   },
 
   loginLink: {
-    color: "#4F8F8A",
+    color: COLORS.primary,
 
     fontSize: 13,
 
@@ -574,7 +580,7 @@ const styles = StyleSheet.create({
   presentation: {
     flex: 1,
 
-    backgroundColor: "#4F8F8A",
+    backgroundColor: COLORS.primary,
 
     paddingHorizontal: 55,
 
@@ -591,20 +597,10 @@ const styles = StyleSheet.create({
     minHeight: 280,
   },
 
-  brand: {
-    color: "#FFFFFF",
-
-    fontSize: 16,
-
-    fontWeight: "700",
-
-    letterSpacing: 3,
-
-    marginBottom: 45,
-  },
+  brandLogo: { width: 100, height: 42, marginBottom: 32 },
 
   presentationTitle: {
-    color: "#FFFFFF",
+    color: COLORS.card,
 
     fontSize: 32,
 
@@ -616,7 +612,7 @@ const styles = StyleSheet.create({
   },
 
   presentationText: {
-    color: "#E8F3F1",
+    color: COLORS.primaryLight,
 
     fontSize: 15,
 
