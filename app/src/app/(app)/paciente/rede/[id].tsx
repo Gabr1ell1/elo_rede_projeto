@@ -22,22 +22,11 @@ import { Psychologist } from "../../../../types/clinic";
 import { ConfirmDialog } from "../../../../components/confirmar-dialogo";
 import { Avatar } from "../../../../components/avatar";
 import { COLORS } from "../../../../constants/cores";
+// O perfil de profissional e seus horários usam os formatadores compartilhados.
+import { formatarDia, formatarHora } from "../../../../formatacao/data-hora";
+import { formatarPreco } from "../../../../formatacao/preco";
 
 const LOGO = require("../../../../../assets/images/elo-logo-branca.png");
-
-const formatPrice = (value: number) => `R$ ${value.toFixed(2).replace(".", ",")}`;
-
-const formatDay = (iso: string) => {
-    const text = new Date(iso).toLocaleDateString("pt-BR", {
-        weekday: "long",
-        day: "2-digit",
-        month: "long"
-    });
-    return text.charAt(0).toUpperCase() + text.slice(1);
-};
-
-const formatTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function PsychologistProfile() {
@@ -69,7 +58,7 @@ export default function PsychologistProfile() {
         );
         const map = new Map<string, string[]>();
         slots.forEach((slot) => {
-            const label = formatDay(slot);
+            const label = formatarDia(slot);
             map.set(label, [...(map.get(label) ?? []), slot]);
         });
         return Array.from(map.entries());
@@ -175,7 +164,7 @@ export default function PsychologistProfile() {
                             </View>
                             <View>
                                 <Text style={styles.priceLabel}>Valor da sessão</Text>
-                                <Text style={styles.price}>{formatPrice(psychologist.price)}</Text>
+                                <Text style={styles.price}>{formatarPreco(psychologist.price)}</Text>
                             </View>
                         </View>
 
@@ -227,7 +216,7 @@ export default function PsychologistProfile() {
                                             style={({ pressed }) => [styles.slot, pressed && styles.pressed]}
                                         >
                                             <Ionicons name="time-outline" size={15} color={COLORS.primaryDark} />
-                                            <Text style={styles.slotText}>{formatTime(slot)}</Text>
+                                            <Text style={styles.slotText}>{formatarHora(slot)}</Text>
                                         </Pressable>
                                     ))}
                                 </View>
@@ -242,7 +231,7 @@ export default function PsychologistProfile() {
                 title="Confirmar agendamento"
                 message={`${psychologist.name}\n${
                     selectedSlot ? new Date(selectedSlot).toLocaleString("pt-BR") : ""
-                }\nValor: ${formatPrice(psychologist.price)}`}
+                }\nValor: ${formatarPreco(psychologist.price)}`}
                 onCancel={() => setSelectedSlot(null)}
                 onConfirm={handleRequest}
                 confirmLabel={requesting ? "Agendando…" : "Confirmar"}

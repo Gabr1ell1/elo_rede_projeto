@@ -22,6 +22,8 @@ import { getPsychologists } from "../../../services/api";
 import { Psychologist } from "../../../types/clinic";
 import { Avatar } from "../../../components/avatar";
 import { COLORS } from "../../../constants/cores";
+// A tela usa as funções comuns para exibir preços com o mesmo padrão em todo o app.
+import { formatarPreco } from "../../../formatacao/preco";
 
 // Coloque o arquivo em: app/assets/images/elo-logo-branca.png
 const LOGO = require("../../../../assets/images/elo-logo-branca.png");
@@ -147,7 +149,7 @@ export default function PatientHome() {
                                         </View>
 
                                         <Text style={styles.cardPrice}>
-                                            R$ {item.price.toFixed(2).replace(".", ",")}
+                                            {formatarPreco(item.price)}
                                             <Text style={styles.cardPriceUnit}> / sessão</Text>
                                         </Text>
                                     </View>

@@ -30,6 +30,8 @@ import { Appointment, Attachment, AttachmentCategory } from "../../../../types/c
 import { ConfirmDialog } from "../../../../components/confirmar-dialogo";
 import { Avatar } from "../../../../components/avatar";
 import { COLORS } from "../../../../constants/cores";
+// O detalhe da consulta usa os formatadores de data e hora compartilhados.
+import { formatarDia, formatarHora } from "../../../../formatacao/data-hora";
 
 const LOGO = require("../../../../../assets/images/elo-logo-branca.png");
 
@@ -62,18 +64,6 @@ const SOURCES: { key: "camera" | "gallery" | "file"; label: string; icon: keyof 
     { key: "gallery", label: "Galeria", icon: "images-outline" },
     { key: "file", label: "Arquivo", icon: "document-outline" }
 ];
-
-const formatDay = (iso: string) => {
-    const text = new Date(iso).toLocaleDateString("pt-BR", {
-        weekday: "long",
-        day: "2-digit",
-        month: "long"
-    });
-    return text.charAt(0).toUpperCase() + text.slice(1);
-};
-
-const formatTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function AppointmentDetail() {
@@ -268,7 +258,7 @@ export default function AppointmentDetail() {
                                 </View>
                                 <View style={{ flexShrink: 1 }}>
                                     <Text style={styles.label}>Data</Text>
-                                    <Text style={styles.infoValue}>{formatDay(appointment.date)}</Text>
+                                    <Text style={styles.infoValue}>{formatarDia(appointment.date)}</Text>
                                 </View>
                             </View>
 
@@ -278,7 +268,7 @@ export default function AppointmentDetail() {
                                 </View>
                                 <View>
                                     <Text style={styles.label}>Horário</Text>
-                                    <Text style={styles.infoValue}>{formatTime(appointment.date)}</Text>
+                                    <Text style={styles.infoValue}>{formatarHora(appointment.date)}</Text>
                                 </View>
                             </View>
                         </View>

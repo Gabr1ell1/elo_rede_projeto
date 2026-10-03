@@ -5,6 +5,9 @@ import { createApi } from '../integration/httpClient';
 import { AuthRequest, RegisterRequest, SessionUser } from '../types/auth';
 import { Appointment, Attachment, AttachmentCategory, Psychologist } from '../types/clinic';
 import { mockLogin, mockRegister } from '../data/mockAuth';
+// O serviço centraliza as mesmas regras de validação usadas em outras partes do app.
+import { validarEmail } from '../validacoes/email';
+import { validarNumeroPositivo } from '../validacoes/numero';
 import {
     mockGetPsychologists,
     mockGetPsychologistById,
@@ -95,10 +98,10 @@ export const getPsychologistById = async (
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function updatePsychologistProfile(id: string, changes: Pick<Psychologist, 'specialty' | 'price' | 'bio' | 'yearsOfExperience' | 'approach' | 'whatsapp' | 'email' | 'visibleInNetwork'>) {
     // A validação também protege a API se outra tela chamar esta função depois.
-    if (changes.yearsOfExperience !== undefined && (!Number.isFinite(changes.yearsOfExperience) || changes.yearsOfExperience < 0)) {
+    if (changes.yearsOfExperience !== undefined && !validarNumeroPositivo(changes.yearsOfExperience)) {
         throw new Error('Anos de experiência precisa ser um número igual ou maior que zero.');
     }
-    if (changes.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(changes.email.trim())) {
+    if (changes.email?.trim() && !validarEmail(changes.email)) {
         throw new Error('Digite um e-mail válido.');
     }
     if (USE_MOCK_CLINIC) return mockUpdatePsychologistProfile(id, changes);

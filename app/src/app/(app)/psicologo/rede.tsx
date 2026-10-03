@@ -23,6 +23,9 @@ import { buscarRedeDePsicologos } from "../../../services/api";
 import { Psychologist } from "../../../types/clinic";
 import { Avatar } from "../../../components/avatar";
 import { COLORS } from "../../../constants/cores";
+// Os contatos usam funções comuns para limpar telefones e montar links de WhatsApp.
+import { somenteDigitos } from "../../../formatacao/telefone";
+import { montarLinkWhatsapp } from "../../../links/whatsapp";
 
 // A logo precisa subir uma pasta a mais que o caminho das constantes.
 const LOGO_REDE = require("../../../../assets/images/elo-logo-branca.png");
@@ -183,8 +186,7 @@ export default function RedeDePsicologos() {
                     </View>
                 }
                 renderItem={({ item: psicologo }) => {
-                    const numero = (psicologo.whatsapp ?? "").replace(/\D/g, "");
-                    const numeroSemPais = numero.startsWith("55") ? numero.slice(2) : numero;
+                    const numero = somenteDigitos(psicologo.whatsapp ?? "");
                     return (
                         <View style={styles.content}>
                             {/* Este cartão resume o perfil sem cortar a bio depois de três linhas. */}
@@ -220,7 +222,7 @@ export default function RedeDePsicologos() {
                                 <View style={styles.contactActions}>
                                     {!!numero && (
                                         <Pressable
-                                            onPress={() => void abrirContato(`https://wa.me/55${numeroSemPais}`)}
+                                            onPress={() => void abrirContato(montarLinkWhatsapp(psicologo.whatsapp ?? ""))}
                                             style={({ pressed }) => [styles.contactButton, pressed && styles.pressed]}
                                         >
                                             <Ionicons name="logo-whatsapp" size={17} color="#FFFFFF" />

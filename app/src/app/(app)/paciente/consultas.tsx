@@ -20,6 +20,8 @@ import { useAuth } from "../../../context/AuthContext";
 import { getMyAppointmentsAsPatient } from "../../../services/api";
 import { Appointment } from "../../../types/clinic";
 import { COLORS } from "../../../constants/cores";
+// As consultas usam os mesmos formatadores de data e hora compartilhados.
+import { formatarDia, formatarHora } from "../../../formatacao/data-hora";
 
 const LOGO = require("../../../../assets/images/elo-logo-branca.png");
 
@@ -37,18 +39,6 @@ const STATUS_STYLE: Record<
     CONFIRMED: { bg: COLORS.primaryLight, fg: COLORS.primaryDark, icon: "checkmark-circle-outline" },
     CANCELLED: { bg: "#FBEAEA", fg: "#C95C5C", icon: "close-circle-outline" }
 };
-
-const formatDay = (iso: string) => {
-    const text = new Date(iso).toLocaleDateString("pt-BR", {
-        weekday: "long",
-        day: "2-digit",
-        month: "long"
-    });
-    return text.charAt(0).toUpperCase() + text.slice(1);
-};
-
-const formatTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function PatientAppointments() {
@@ -187,7 +177,7 @@ export default function PatientAppointments() {
                                                     size={15}
                                                     color={COLORS.textSecondary}
                                                 />
-                                                <Text style={styles.metaText}>{formatDay(item.date)}</Text>
+                                                <Text style={styles.metaText}>{formatarDia(item.date)}</Text>
                                             </View>
                                             <View style={styles.meta}>
                                                 <Ionicons
@@ -195,7 +185,7 @@ export default function PatientAppointments() {
                                                     size={15}
                                                     color={COLORS.textSecondary}
                                                 />
-                                                <Text style={styles.metaText}>{formatTime(item.date)}</Text>
+                                                <Text style={styles.metaText}>{formatarHora(item.date)}</Text>
                                             </View>
                                         </View>
 
