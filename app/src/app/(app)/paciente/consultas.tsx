@@ -2,6 +2,7 @@
 // Onde ele é usado: src/app/(app)/paciente/consultas.tsx é importado pelas telas ou componentes correspondentes.
 
 // Esta página mostra as consultas do paciente e permite abrir cada detalhe.
+import { MenuSanduiche } from "../../../components/menu-sanduiche";
 import { useEffect, useState } from "react";
 import {
     View,
@@ -87,37 +88,7 @@ export default function PatientAppointments() {
                     accessibilityLabel="Elo - Psicologia clínica em rede"
                 />
 
-                <View style={styles.navActions}>
-                    {/* Esta navegação usa o novo endereço em português. */}
-                    <Pressable
-                        onPress={() => router.push("/paciente/consultas" as any)}
-                        accessibilityLabel="Minhas consultas"
-                        style={({ pressed }) => [
-                            styles.navIcon,
-                            styles.navIconActive,
-                            pressed && styles.pressed
-                        ]}
-                    >
-                        <Ionicons name="calendar" size={20} color="#FFFFFF" />
-                    </Pressable>
-
-                    {/* Esta navegação usa o novo endereço em português. */}
-                    <Pressable
-                        onPress={() => router.push("/paciente/perfil" as any)}
-                        accessibilityLabel="Meu perfil"
-                        style={({ pressed }) => [styles.navIcon, pressed && styles.pressed]}
-                    >
-                        <Ionicons name="person-outline" size={20} color="#FFFFFF" />
-                    </Pressable>
-
-                    <Pressable
-                        onPress={signOut}
-                        style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
-                    >
-                        <Ionicons name="log-out-outline" size={18} color="#FFFFFF" />
-                        <Text style={styles.logoutText}>Sair</Text>
-                    </Pressable>
-                </View>
+                <MenuSanduiche />
             </View>
 
             <View style={styles.content}>

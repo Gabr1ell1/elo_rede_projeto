@@ -19,6 +19,7 @@ import { useAuth } from "../../context/AuthContext";
 import { AuthInput } from "../../components/entrada-autenticacao";
 import { Role } from "../../types/auth";
 import { COLORS } from "../../constants/cores";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const LOGO = require("../../../assets/images/elo-logo-branca.png");
 
@@ -41,6 +42,7 @@ export default function Register() {
 
   const { width } = useWindowDimensions();
   const isMobile = width < 700;
+  const insets = useSafeAreaInsets();
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
   async function handleRegister() {
@@ -64,7 +66,7 @@ export default function Register() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-    <View style={styles.background}>
+    <View style={[styles.background, isMobile && styles.backgroundMobile, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 8 }]}>
       {/* DECORAÇÕES */}
       <View
         style={[
@@ -81,7 +83,7 @@ export default function Register() {
       />
 
       {/* O cartão rola quando o teclado reduz a altura disponível no celular. */}
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingVertical: 12 }} keyboardShouldPersistTaps="handled">
+      <ScrollView style={styles.authScroll} contentContainerStyle={[styles.authScrollContent, isMobile && styles.authScrollContentMobile]} keyboardShouldPersistTaps="handled">
       <View
         style={[
           styles.card,
@@ -245,7 +247,7 @@ export default function Register() {
 
           </View>
 
-          <View style={styles.imagePlaceholder}>
+          <View style={[styles.imagePlaceholder, isMobile && styles.imagePlaceholderMobile]}>
           </View>
         </View>
       </View>
@@ -299,12 +301,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
 
     justifyContent: "center",
-    alignItems: "center",
-
     padding: 24,
 
     overflow: "hidden",
   },
+  backgroundMobile: { paddingHorizontal: 12, alignItems: "stretch" },
+  authScroll: { width: "100%", flex: 1 },
+  authScrollContent: { flexGrow: 1, justifyContent: "center", alignItems: "center", paddingVertical: 12 },
+  authScrollContentMobile: { alignItems: "stretch" },
 
   /* =========================
      DECORAÇÕES
@@ -377,6 +381,7 @@ const styles = StyleSheet.create({
 
   cardMobile: {
     width: "100%",
+    alignSelf: "stretch",
 
     minHeight: 0,
 
@@ -398,9 +403,10 @@ const styles = StyleSheet.create({
   },
 
   formContainerMobile: {
-    paddingHorizontal: 30,
-
-    paddingVertical: 40,
+    width: "100%",
+    minWidth: 0,
+    paddingHorizontal: 24,
+    paddingVertical: 28,
   },
 
   welcome: {
@@ -419,6 +425,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
 
     fontSize: 28,
+    flexShrink: 1,
 
     fontWeight: "700",
 
@@ -459,6 +466,7 @@ const styles = StyleSheet.create({
 
   roleRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
 
     gap: 8,
 
@@ -602,14 +610,12 @@ const styles = StyleSheet.create({
   },
 
   presentationMobile: {
-    paddingHorizontal: 30,
-
-    paddingVertical: 35,
-
-    minHeight: 280,
+    paddingHorizontal: 24,
+    paddingVertical: 24,
   },
 
-  brandLogo: { width: 100, height: 42, marginBottom: 32 },
+  brandLogo: { width: 132, height: 52, marginBottom: 22 },
+  imagePlaceholderMobile: { height: 0 },
 
   presentationTitle: {
     color: COLORS.card,

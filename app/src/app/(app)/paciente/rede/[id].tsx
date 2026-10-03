@@ -2,6 +2,7 @@
 // Onde ele é usado: src/app/(app)/paciente/rede/[id].tsx é importado pelas telas ou componentes correspondentes.
 
 // Esta página mostra o perfil do profissional e os horários para agendamento.
+import { MenuSanduiche } from "../../../../components/menu-sanduiche";
 import { useEffect, useMemo, useState } from "react";
 import {
     View,
@@ -106,33 +107,7 @@ export default function PsychologistProfile() {
                     accessibilityLabel="Elo - Psicologia clínica em rede"
                 />
 
-                <View style={styles.navActions}>
-                    {/* O atalho leva à rota atualizada de consultas. */}
-                    <Pressable
-                        onPress={() => router.push("/paciente/consultas" as any)}
-                        accessibilityLabel="Minhas consultas"
-                        style={({ pressed }) => [styles.navIcon, pressed && styles.pressed]}
-                    >
-                        <Ionicons name="calendar-outline" size={20} color="#FFFFFF" />
-                    </Pressable>
-
-                    {/* O acesso ao perfil agora usa a rota com nome em português. */}
-                    <Pressable
-                        onPress={() => router.push("/paciente/perfil" as any)}
-                        accessibilityLabel="Meu perfil"
-                        style={({ pressed }) => [styles.navIcon, pressed && styles.pressed]}
-                    >
-                        <Ionicons name="person-outline" size={20} color="#FFFFFF" />
-                    </Pressable>
-
-                    <Pressable
-                        onPress={signOut}
-                        style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
-                    >
-                        <Ionicons name="log-out-outline" size={18} color="#FFFFFF" />
-                        <Text style={styles.logoutText}>Sair</Text>
-                    </Pressable>
-                </View>
+                <MenuSanduiche />
             </View>
 
             <View style={styles.content}>

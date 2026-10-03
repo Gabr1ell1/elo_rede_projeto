@@ -2,6 +2,7 @@
 // Onde ele é usado: src/app/(app)/paciente/index.tsx é importado pelas telas ou componentes correspondentes.
 
 // Esta é a página inicial do paciente, com a lista de profissionais.
+import { MenuSanduiche } from "../../../components/menu-sanduiche";
 import { useEffect, useState } from "react";
 import {
     View,
@@ -72,33 +73,7 @@ export default function PatientHome() {
                         accessibilityLabel="Elo - Psicologia clínica em rede"
                     />
 
-                    <View style={styles.navActions}>
-                        {/* Este botão abre a rota de consultas, renomeada em português. */}
-                        <Pressable
-                            onPress={() => router.push("/paciente/consultas" as any)}
-                            accessibilityLabel="Minhas consultas"
-                            style={({ pressed }) => [styles.navIcon, pressed && styles.pressed]}
-                        >
-                            <Ionicons name="calendar-outline" size={20} color="#FFFFFF" />
-                        </Pressable>
-
-                        {/* Este botão abre a rota de perfil, renomeada em português. */}
-                        <Pressable
-                            onPress={() => router.push("/paciente/perfil" as any)}
-                            accessibilityLabel="Meu perfil"
-                            style={({ pressed }) => [styles.navIcon, pressed && styles.pressed]}
-                        >
-                            <Ionicons name="person-outline" size={20} color="#FFFFFF" />
-                        </Pressable>
-
-                        <Pressable
-                            onPress={signOut}
-                            style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
-                        >
-                            <Ionicons name="log-out-outline" size={18} color="#FFFFFF" />
-                            <Text style={styles.logoutText}>Sair</Text>
-                        </Pressable>
-                    </View>
+                    <MenuSanduiche />
                 </View>
 
                 {/* boas-vindas: mesmo container da lista, então alinha com ela */}

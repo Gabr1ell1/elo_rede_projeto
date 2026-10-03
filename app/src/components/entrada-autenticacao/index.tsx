@@ -46,6 +46,8 @@ export function AuthInput({
 // Este bloco concentra os estilos para manter o visual desta tela ou componente organizado.
 const styles = StyleSheet.create({
   container: {
+    width: "100%",
+    minWidth: 0,
     marginBottom: 20,
   },
 
@@ -57,6 +59,8 @@ const styles = StyleSheet.create({
   },
 
   input: {
+    width: "100%",
+    minWidth: 0,
     height: 50,
 
     borderBottomWidth: 1.5,

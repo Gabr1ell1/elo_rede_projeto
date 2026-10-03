@@ -2,6 +2,7 @@
 // Onde ele é usado: src/app/(app)/psicologo/rede.tsx é importado pelas telas ou componentes correspondentes.
 
 // Esta tela lista os colegas que aceitaram aparecer na rede profissional.
+import { MenuSanduiche } from "../../../components/menu-sanduiche";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     ActivityIndicator,
@@ -99,43 +100,7 @@ export default function RedeDePsicologos() {
                     accessibilityLabel="Elo - Psicologia clínica em rede"
                 />
 
-                <View style={styles.navActions}>
-                    {/* Este botão volta para a agenda do psicólogo. */}
-                    <Pressable
-                        onPress={() => router.push("/psicologo" as any)}
-                        accessibilityLabel="Minha agenda"
-                        style={({ pressed }) => [styles.navIcon, pressed && styles.pressed]}
-                    >
-                        <Ionicons name="calendar-outline" size={20} color="#FFFFFF" />
-                    </Pressable>
-
-                    {/* Este botão abre o perfil profissional. */}
-                    <Pressable
-                        onPress={() => router.push("/psicologo/perfil" as any)}
-                        accessibilityLabel="Editar meu perfil"
-                        style={({ pressed }) => [styles.navIcon, pressed && styles.pressed]}
-                    >
-                        <Ionicons name="person-outline" size={20} color="#FFFFFF" />
-                    </Pressable>
-
-                    {/* Este botão mostra que a pessoa está na rede de psicólogos. */}
-                    <Pressable
-                        onPress={() => router.push("/psicologo/rede" as any)}
-                        accessibilityLabel="Rede de psicólogos"
-                        style={({ pressed }) => [styles.navIcon, styles.navIconActive, pressed && styles.pressed]}
-                    >
-                        <Ionicons name="globe" size={20} color="#FFFFFF" />
-                    </Pressable>
-
-                    {/* Este botão encerra a sessão, igual nas outras telas. */}
-                    <Pressable
-                        onPress={signOut}
-                        style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
-                    >
-                        <Ionicons name="log-out-outline" size={18} color="#FFFFFF" />
-                        <Text style={styles.logoutText}>Sair</Text>
-                    </Pressable>
-                </View>
+                <MenuSanduiche />
             </View>
 
             <View style={styles.content}>
