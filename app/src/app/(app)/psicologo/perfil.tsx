@@ -9,7 +9,9 @@ import {
     Switch,
     ScrollView,
     StyleSheet,
-    ActivityIndicator
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -181,6 +183,7 @@ export default function PsychologistProfileScreen() {
     }
 
     return (
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <View style={styles.screen}>
             {hero}
 
@@ -383,6 +386,7 @@ export default function PsychologistProfileScreen() {
                 </View>
             </ScrollView>
         </View>
+        </KeyboardAvoidingView>
     );
 }
 
@@ -594,9 +598,7 @@ const styles = StyleSheet.create({
         paddingVertical: 13,
         fontSize: 15,
         color: COLORS.text,
-        // remove o contorno azul do navegador na web
-        outlineStyle: "none"
-    } as any,
+    },
     textarea: {
         minHeight: 110,
         paddingTop: 0,

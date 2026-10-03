@@ -7,6 +7,8 @@ import {
   StyleSheet,
   useWindowDimensions,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { router } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
@@ -47,6 +49,7 @@ export default function Register() {
   }
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
     <View style={styles.background}>
       {/* DECORAÇÕES */}
       <View
@@ -234,6 +237,7 @@ export default function Register() {
         </View>
       </View>
     </View>
+    </KeyboardAvoidingView>
   );
 }
 

@@ -27,8 +27,11 @@ const USE_MOCK = process.env.EXPO_PUBLIC_USE_MOCK === 'true';
 const USE_MOCK_CLINIC =
     USE_MOCK || process.env.EXPO_PUBLIC_USE_MOCK_CLINIC === 'true';
 
-const authApi = createApi(`${process.env.EXPO_PUBLIC_API_URL}/auth/v1`);
-const clinicApi = createApi(`${process.env.EXPO_PUBLIC_API_URL}/clinic/v1`);
+// Configure EXPO_PUBLIC_API_URL in app/.env: use the computer's LAN IP on a
+// physical phone, or 10.0.2.2 on the Android emulator (localhost is the phone).
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8082';
+const authApi = createApi(`${API_URL}/auth/v1`);
+const clinicApi = createApi(`${API_URL}/clinic/v1`);
 
 // ===== AUTH =====
 

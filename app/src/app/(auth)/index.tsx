@@ -6,6 +6,8 @@ import {
   useWindowDimensions,
   View,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { router } from "expo-router";
 import { AuthInput } from "../../components/entrada-autenticacao";
@@ -36,6 +38,7 @@ export default function Login() {
   }
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
     <View style={styles.background}>
       {/* DECORAÇÕES */}
       <View
@@ -181,6 +184,7 @@ export default function Login() {
         </View>
       </View>
     </View>
+    </KeyboardAvoidingView>
   );
 }
 

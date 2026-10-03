@@ -38,36 +38,6 @@ export default function PatientHome() {
             .finally(() => setLoading(false));
     }, []);
 
-    // Barra de rolagem verde água (só na web; no celular o sistema já desenha a dele)
-    useEffect(() => {
-        if (Platform.OS !== "web") return;
-
-        const style = document.createElement("style");
-        style.id = "elo-scrollbar";
-        style.innerHTML = `
-            * {
-                scrollbar-width: thin;
-                scrollbar-color: ${COLORS.primary} ${COLORS.primaryLight};
-            }
-            *::-webkit-scrollbar { width: 12px; height: 12px; }
-            *::-webkit-scrollbar-track {
-                background: ${COLORS.primaryLight};
-                border-radius: 12px;
-            }
-            *::-webkit-scrollbar-thumb {
-                background: ${COLORS.primary};
-                border-radius: 12px;
-                border: 3px solid ${COLORS.primaryLight};
-            }
-            *::-webkit-scrollbar-thumb:hover { background: ${COLORS.primaryDark}; }
-        `;
-        document.head.appendChild(style);
-
-        return () => {
-            style.remove();
-        };
-    }, []);
-
     const header = (
         <View style={styles.content}>
             <View style={styles.sectionHeader}>
@@ -151,7 +121,7 @@ export default function PatientHome() {
                 contentContainerStyle={styles.list}
                 style={styles.scroll}
                 showsVerticalScrollIndicator
-                persistentScrollbar
+                persistentScrollbar={Platform.OS === "android"}
                 ListEmptyComponent={
                     <View style={styles.content}>
                         {loading ? (
@@ -259,8 +229,8 @@ const styles = StyleSheet.create({
         gap: 10
     },
     navIcon: {
-        width: 40,
-        height: 40,
+        width: 44,
+        height: 44,
         borderRadius: 20,
         alignItems: "center",
         justifyContent: "center",
@@ -298,7 +268,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: 6,
-        height: 40,
+        minHeight: 44,
         paddingHorizontal: 16,
         borderRadius: 999,
         backgroundColor: "rgba(255,255,255,0.18)"

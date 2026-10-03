@@ -82,7 +82,7 @@ export function Avatar({
                 {editable && (
                     <Pressable
                         onPress={() => setMenu(true)}
-                        style={[styles.badge, { width: badge, height: badge, borderRadius: badge / 2 }]}
+                        style={[styles.badge, { width: Math.max(44, badge), height: Math.max(44, badge), borderRadius: Math.max(44, badge) / 2 }]}
                     >
                         <Ionicons name="pencil" size={badge * 0.5} color="#FFFFFF" />
                     </Pressable>
@@ -142,6 +142,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 14,
+        minHeight: 44,
         padding: 14,
         borderRadius: 16,
         borderWidth: 1,
@@ -149,6 +150,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#F4F7F6'
     },
     optionText: { color: '#29413F', fontSize: 15, fontWeight: '600' },
-    cancel: { alignItems: 'center', paddingVertical: 12 },
+    cancel: { minHeight: 44, justifyContent: 'center', alignItems: 'center', paddingVertical: 12 },
     cancelText: { color: '#6B7F7C', fontSize: 14, fontWeight: '700' }
 });

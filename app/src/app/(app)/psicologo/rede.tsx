@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.card
     },
     searchFieldFocused: { borderColor: COLORS.primary },
-    searchInput: { flex: 1, paddingVertical: 13, fontSize: 15, color: COLORS.text, outlineStyle: "none" } as any,
+    searchInput: { flex: 1, paddingVertical: 13, fontSize: 15, color: COLORS.text },
 
     // A caixa vermelha é a mesma usada para erros nas telas atuais.
     errorBox: {
