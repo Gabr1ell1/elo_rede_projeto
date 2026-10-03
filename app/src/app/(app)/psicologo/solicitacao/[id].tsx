@@ -9,10 +9,12 @@ import { Avatar } from "../../../../components/avatar";
 import { ConfirmDialog } from "../../../../components/confirmar-dialogo";
 import { useAuth } from "../../../../context/AuthContext";
 import { useAlerta, motivoDoErro } from "../../../../context/AlertaContext";
-import { getAppointmentById, updateAppointmentStatus } from "../../../../services/api";
-import { Appointment } from "../../../../types/clinic";
+import { getAppointmentById, listAttachments, updateAppointmentStatus } from "../../../../services/api";
+import { Appointment, Attachment } from "../../../../types/clinic";
 import { formatarDia, formatarHora } from "../../../../formatacao/data-hora";
 import { COLORS } from "../../../../constants/cores";
+import { baixarAnexo } from "../../../../services/download";
+import { CartaoAnexo } from "../../../../components/cartao-anexo";
 
 type AcaoSolicitacao = "CONFIRMED" | "CANCELLED";
 
@@ -21,7 +23,7 @@ export default function DetalheSolicitacao() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const roteador = useRouter();
     const { user } = useAuth();
-    const { mostrarErro } = useAlerta();
+    const { mostrarErro, mostrarSucesso } = useAlerta();
     // Guarda os dados de paciente e horário devolvidos pelo serviço.
     const [consulta, setConsulta] = useState<Appointment | null>(null);
     // Controla a espera enquanto o pedido é carregado.
@@ -30,16 +32,44 @@ export default function DetalheSolicitacao() {
     const [acao, setAcao] = useState<AcaoSolicitacao | null>(null);
     // Desativa ações enquanto a mudança está sendo salva.
     const [salvando, setSalvando] = useState(false);
+    const [anexos, setAnexos] = useState<Attachment[]>([]);
+    const [baixando, setBaixando] = useState<string | null>(null);
 
     // Busca os dados permitidos deste pedido ao abrir a tela.
     // Busca a solicitação assim que os parâmetros da rota e a sessão estiverem prontos.
     useEffect(() => {
         if (!id || !user) return;
-        getAppointmentById(id, user.userId, "PSYCHOLOGIST")
-            .then(setConsulta)
+        Promise.all([
+            getAppointmentById(id, user.userId, "PSYCHOLOGIST"),
+            listAttachments(id, user.userId, "PSYCHOLOGIST"),
+        ])
+            .then(([pedido, documentos]) => { setConsulta(pedido); setAnexos(documentos); })
             .catch((erro) => mostrarErro("Erro ao carregar solicitação", motivoDoErro(erro)))
             .finally(() => setCarregando(false));
     }, [id, user, mostrarErro]);
+
+    // Baixa um documento depois que o serviço confirma o acesso do psicólogo.
+    async function baixar(item: Attachment) {
+        if (!user) return;
+        setBaixando(item.id);
+        try {
+            const resultado = await baixarAnexo(item, user.userId, "PSYCHOLOGIST");
+            mostrarSucesso("Arquivo salvo", `Arquivo salvo em ${resultado.pasta}.`);
+        } catch (erro) { mostrarErro("Erro ao baixar arquivo", motivoDoErro(erro)); }
+        finally { setBaixando(null); }
+    }
+
+    // Baixa todos os documentos de forma sequencial na pasta escolhida.
+    async function baixarTodos() {
+        if (!user) return;
+        setBaixando("todos");
+        try {
+            let destino = "pasta selecionada";
+            for (const item of anexos) destino = (await baixarAnexo(item, user.userId, "PSYCHOLOGIST")).pasta;
+            mostrarSucesso("Arquivos salvos", `${anexos.length} arquivos salvos em ${destino}.`);
+        } catch (erro) { mostrarErro("Erro ao baixar arquivos", motivoDoErro(erro)); }
+        finally { setBaixando(null); }
+    }
 
     // Confirma a ação escolhida e volta à lista quando a atualização termina.
     async function confirmarAcao() {
@@ -82,6 +112,11 @@ export default function DetalheSolicitacao() {
                     </View>
                 ) : <Text style={estilos.meta}>Esta solicitação já foi respondida.</Text>}
             </View>
+            <Text style={estilos.tituloDocumentos}>Documentos enviados pelo paciente</Text>
+            {anexos.length === 0 ? <Text style={estilos.meta}>Nenhum documento anexado a esta solicitação.</Text> : <>
+                {anexos.map((anexo) => <CartaoAnexo key={anexo.id} anexo={anexo} aoBaixar={() => void baixar(anexo)} carregando={baixando === anexo.id} />)}
+                {anexos.length > 1 && <Pressable disabled={baixando === "todos"} onPress={() => void baixarTodos()} style={estilos.baixarTodos}><Ionicons name="download-outline" size={18} color={COLORS.primaryDark} /><Text style={estilos.baixarTodosTexto}>{baixando === "todos" ? "Baixando..." : "Baixar todos"}</Text></Pressable>}
+            </>}
             <ConfirmDialog visible={!!acao} title={acao === "CONFIRMED" ? "Confirmar consulta?" : "Recusar consulta?"} message={acao === "CONFIRMED" ? "A consulta ficará confirmada e receberá um link falso para a chamada." : "A consulta será marcada como cancelada."} confirmLabel={acao === "CONFIRMED" ? "Confirmar" : "Recusar"} onCancel={() => setAcao(null)} onConfirm={() => void confirmarAcao()} />
         </ScrollView>
     );
@@ -108,5 +143,8 @@ const estilos = StyleSheet.create({
     textoBotao: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
     botaoRecusar: { minHeight: 46, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 999, backgroundColor: "#FBEAEA" },
     textoRecusar: { color: "#B4232F", fontSize: 14, fontWeight: "700" },
+    tituloDocumentos: { color: COLORS.text, fontSize: 19, fontWeight: "700", marginTop: 24, marginBottom: 8 },
+    baixarTodos: { minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 10, borderRadius: 999, backgroundColor: COLORS.primaryLight },
+    baixarTodosTexto: { color: COLORS.primaryDark, fontWeight: "700" },
     pressionado: { opacity: 0.82, transform: [{ scale: 0.99 }] }
 });

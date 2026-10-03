@@ -5,7 +5,6 @@ import { createApi } from '../integration/httpClient';
 import { AuthRequest, RegisterRequest, SessionUser } from '../types/auth';
 import { Appointment, Attachment, AttachmentCategory, Psychologist } from '../types/clinic';
 import { carregarPerfilUsuario, limparArmazenamento, salvarPerfilUsuario } from '../data/armazenamento';
-import { mockRestaurarUsuarios } from '../data/mockAuth';
 // O serviço centraliza as mesmas regras de validação usadas em outras partes do app.
 import { validarEmail } from '../validacoes/email';
 import { validarNumeroPositivo } from '../validacoes/numero';
@@ -259,5 +258,4 @@ export async function getAvatar(userId: string) {
 export async function restaurarDadosDeExemplo(): Promise<void> {
     await limparArmazenamento();
     mockRestaurarClinica();
-    mockRestaurarUsuarios();
 }

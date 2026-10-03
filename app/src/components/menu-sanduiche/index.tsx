@@ -43,6 +43,7 @@ export function MenuSanduiche() {
             : [
             { label: 'Início', icon: 'home-outline' as const, rota: '/paciente' as const },
             { label: 'Minhas consultas', icon: 'calendar-outline' as const, rota: '/paciente/consultas' as const },
+            { label: 'Consultas realizadas', icon: 'document-text-outline' as const, rota: '/paciente/consultas-realizadas' as const },
             { label: 'Meu perfil', icon: 'person-outline' as const, rota: '/paciente/perfil' as const },
         ];
 
@@ -110,7 +111,7 @@ export function MenuSanduiche() {
                                 }}
                             >
                                 <View style={styles.navItemIcon}>
-                                    <Ionicons name={caminho === link.rota && link.rota === '/psicologo/solicitacoes' ? 'mail-unread' : link.icon} size={22} color={caminho === link.rota ? COLORS.primaryDark : COLORS.primary} />
+                                    <Ionicons name={caminho === link.rota && link.rota === '/psicologo/solicitacoes' ? 'mail-unread' : caminho === link.rota && link.rota === '/paciente/consultas-realizadas' ? 'document-text' : link.icon} size={22} color={caminho === link.rota ? COLORS.primaryDark : COLORS.primary} />
                                     {link.rota === '/psicologo/solicitacoes' && pendentes > 0 && <View style={styles.badge}><Text style={styles.badgeText}>{pendentes}</Text></View>}
                                 </View>
                                 <Text style={styles.label}>{link.label}</Text>

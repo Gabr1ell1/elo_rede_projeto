@@ -228,9 +228,9 @@ export async function mockGarantirConsultasDeDemonstracaoPaciente(patientId: str
         { id: ids[2], patientId, patientName, psychologistId: "kleber", psychologistName: nomePsicologo, date: dataRelativa(14, 11), status: "CONFIRMED", linkConsulta: "https://meet.elo.fake/paciente-futura" },
     ];
     const novosAnexos: Attachment[] = [
-        { id: `${ids[0]}-laudo`, appointmentId: ids[0], name: "laudo-psicologico.pdf", mimeType: "application/pdf", size: 1450, category: "REPORT", uri: "elo-asset:laudo-psicologico", createdAt: new Date().toISOString(), uploadedBy: "kleber" },
-        { id: `${ids[1]}-exame`, appointmentId: ids[1], name: "exame-sangue.pdf", mimeType: "application/pdf", size: 1450, category: "EXAM", uri: "elo-asset:exame-sangue", createdAt: new Date().toISOString(), uploadedBy: "kleber" },
-        { id: `${ids[1]}-atestado`, appointmentId: ids[1], name: "atestado.pdf", mimeType: "application/pdf", size: 1450, category: "CERTIFICATE", uri: "elo-asset:atestado", createdAt: new Date().toISOString(), uploadedBy: "kleber" },
+        { id: `${ids[0]}-laudo`, appointmentId: ids[0], name: "laudo-psicologico.pdf", mimeType: "application/pdf", size: 691, category: "REPORT", uri: "elo-asset:laudo-psicologico", createdAt: new Date().toISOString(), uploadedBy: "kleber" },
+        { id: `${ids[1]}-exame`, appointmentId: ids[1], name: "exame-sangue.pdf", mimeType: "application/pdf", size: 687, category: "EXAM", uri: "elo-asset:exame-sangue", createdAt: new Date().toISOString(), uploadedBy: "kleber" },
+        { id: `${ids[1]}-atestado`, appointmentId: ids[1], name: "atestado.pdf", mimeType: "application/pdf", size: 679, category: "CERTIFICATE", uri: "elo-asset:atestado", createdAt: new Date().toISOString(), uploadedBy: "kleber" },
     ];
     APPOINTMENTS = juntarConsultas(APPOINTMENTS, novasConsultas);
     ATTACHMENTS = juntarAnexos(ATTACHMENTS, novosAnexos);

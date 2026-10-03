@@ -9,23 +9,29 @@ import * as Clipboard from "expo-clipboard";
 import { Avatar } from "../../../../components/avatar";
 import { useAuth } from "../../../../context/AuthContext";
 import { useAlerta, motivoDoErro } from "../../../../context/AlertaContext";
-import { getAppointmentById, listAttachments } from "../../../../services/api";
-import { Appointment, Attachment } from "../../../../types/clinic";
+import { getAppointmentById, listAttachments, uploadAttachment } from "../../../../services/api";
+import { Appointment, Attachment, AttachmentCategory } from "../../../../types/clinic";
 import { formatarDataHora } from "../../../../formatacao/data-hora";
 import { COLORS } from "../../../../constants/cores";
+import { pickDocument, pickImage, save, takePhoto } from "../../../../services/fileStorage";
+import { baixarAnexo } from "../../../../services/download";
+import { CartaoAnexo } from "../../../../components/cartao-anexo";
 
 // Carrega os dados da consulta e os anexos que pertencem ao paciente e profissional. Exemplo: abrir pelo cartão da agenda.
 export default function DetalheConsultaPsicologo() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const roteador = useRouter();
     const { user } = useAuth();
-    const { mostrarErro } = useAlerta();
+    const { mostrarErro, mostrarSucesso } = useAlerta();
     // Guarda as informações da consulta atual.
     const [consulta, setConsulta] = useState<Appointment | null>(null);
     // Guarda os anexos associados ao agendamento.
     const [anexos, setAnexos] = useState<Attachment[]>([]);
     // Controla o indicador durante as chamadas de carregamento.
     const [carregando, setCarregando] = useState(true);
+    const [categoria, setCategoria] = useState<AttachmentCategory>("REPORT");
+    const [enviando, setEnviando] = useState(false);
+    const [baixando, setBaixando] = useState<string | null>(null);
 
     // Busca consulta e anexos ao abrir a rota, mostrando o motivo se o serviço falhar.
     const carregar = useCallback(async () => {
@@ -58,10 +64,43 @@ export default function DetalheConsultaPsicologo() {
         catch (erro) { mostrarErro("Erro ao copiar link", motivoDoErro(erro)); }
     }
 
-    // Abre um anexo usando o endereço que já existe nos dados da consulta.
-    async function abrirAnexo(anexo: Attachment) {
-        try { await Linking.openURL(anexo.uri); }
-        catch (erro) { mostrarErro("Erro ao abrir anexo", motivoDoErro(erro)); }
+    // Permite ao psicólogo anexar documentos somente depois que a consulta foi confirmada.
+    async function anexarArquivo(origem: "camera" | "gallery" | "file") {
+        if (!id || !user || consulta?.status !== "CONFIRMED") return;
+        setEnviando(true);
+        try {
+            const arquivoEscolhido = origem === "camera" ? await takePhoto() : origem === "gallery" ? await pickImage() : await pickDocument();
+            if (!arquivoEscolhido) return;
+            const arquivo = arquivoEscolhido as { uri: string; name?: string; mimeType?: string; fileSize?: number; size?: number; file?: Blob };
+            const nome = arquivo.name || `documento-${Date.now()}.jpg`;
+            const mimeType = arquivo.mimeType || (nome.toLowerCase().endsWith(".pdf") ? "application/pdf" : "image/jpeg");
+            await uploadAttachment(id, { uri: await save(arquivo.uri, nome), name: nome, mimeType, size: arquivo.fileSize ?? arquivo.size ?? 0, blob: arquivo.file }, categoria, user.userId, "PSYCHOLOGIST");
+            await carregar();
+        } catch (erro) { mostrarErro("Erro ao anexar documento", motivoDoErro(erro)); }
+        finally { setEnviando(false); }
+    }
+
+    // Baixa documentos recebidos ou enviados pelo psicólogo com validação do participante.
+    async function baixar(item: Attachment) {
+        if (!user) return;
+        setBaixando(item.id);
+        try {
+            const resultado = await baixarAnexo(item, user.userId, "PSYCHOLOGIST");
+            mostrarSucesso("Arquivo salvo", `Arquivo salvo em ${resultado.pasta}.`);
+        } catch (erro) { mostrarErro("Erro ao baixar arquivo", motivoDoErro(erro)); }
+        finally { setBaixando(null); }
+    }
+
+    // Baixa todos os documentos desta consulta em sequência.
+    async function baixarTodos() {
+        if (!user) return;
+        setBaixando("todos");
+        try {
+            let destino = "pasta selecionada";
+            for (const anexo of anexos) destino = (await baixarAnexo(anexo, user.userId, "PSYCHOLOGIST")).pasta;
+            mostrarSucesso("Arquivos salvos", `${anexos.length} arquivos salvos em ${destino}.`);
+        } catch (erro) { mostrarErro("Erro ao baixar arquivos", motivoDoErro(erro)); }
+        finally { setBaixando(null); }
     }
 
     if (carregando) return <View style={estilos.centro}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
@@ -87,7 +126,15 @@ export default function DetalheConsultaPsicologo() {
                 )}
             </View>
             <Text style={estilos.tituloSecao}>Anexos</Text>
-            <FlatList data={anexos} keyExtractor={(anexo) => anexo.id} ListEmptyComponent={<Text style={estilos.meta}>Nenhum anexo enviado.</Text>} renderItem={({ item }) => <Pressable onPress={() => void abrirAnexo(item)} style={({ pressed }) => [estilos.anexo, pressed && estilos.pressionado]}><Ionicons name="document-outline" size={20} color={COLORS.primaryDark} /><Text style={estilos.anexoTexto}>{item.name} · {item.category}</Text><Ionicons name="open-outline" size={16} color={COLORS.textSecondary} /></Pressable>} />
+            {anexos.length === 0 && <Text style={estilos.meta}>Nenhum anexo enviado.</Text>}
+            {anexos.map((anexo) => <CartaoAnexo key={anexo.id} anexo={anexo} aoBaixar={() => void baixar(anexo)} carregando={baixando === anexo.id} enviadoPeloPsicologo={anexo.uploadedBy === user?.userId} />)}
+            {anexos.length > 1 && <Pressable disabled={baixando === "todos"} onPress={() => void baixarTodos()} style={estilos.baixarTodos}><Ionicons name="download-outline" size={18} color={COLORS.primaryDark} /><Text style={estilos.baixarTodosTexto}>{baixando === "todos" ? "Baixando..." : "Baixar todos"}</Text></Pressable>}
+            {consulta.status === "CONFIRMED" && <View style={estilos.uploadCard}>
+                <Text style={estilos.rotulo}>Enviar documento para o paciente</Text>
+                <View style={estilos.categorias}>{(["REPORT", "CERTIFICATE", "EXAM"] as AttachmentCategory[]).map((tipo) => <Pressable key={tipo} onPress={() => setCategoria(tipo)} style={[estilos.categoria, categoria === tipo && estilos.categoriaAtiva]}><Text style={[estilos.categoriaTexto, categoria === tipo && estilos.categoriaTextoAtiva]}>{tipo === "REPORT" ? "Laudo" : tipo === "CERTIFICATE" ? "Atestado" : "Exame"}</Text></Pressable>)}</View>
+                <View style={estilos.fontes}>{(["camera", "gallery", "file"] as const).map((origem) => <Pressable key={origem} disabled={enviando} onPress={() => void anexarArquivo(origem)} style={estilos.fonte}><Ionicons name={origem === "camera" ? "camera-outline" : origem === "gallery" ? "images-outline" : "document-outline"} size={20} color={COLORS.primaryDark} /><Text style={estilos.fonteTexto}>{origem === "camera" ? "Câmera" : origem === "gallery" ? "Galeria" : "Arquivo"}</Text></Pressable>)}</View>
+                {enviando && <ActivityIndicator color={COLORS.primary} />}
+            </View>}
         </View>
     );
 }
@@ -117,5 +164,16 @@ const estilos = StyleSheet.create({
     meta: { color: COLORS.textSecondary, fontSize: 14 },
     anexo: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, marginBottom: 8, borderRadius: 14, backgroundColor: COLORS.card, borderWidth: 1, borderColor: COLORS.border },
     anexoTexto: { flex: 1, color: COLORS.text, fontSize: 13 },
+    baixarTodos: { minHeight: 42, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 8, borderRadius: 999, backgroundColor: COLORS.primaryLight },
+    baixarTodosTexto: { color: COLORS.primaryDark, fontWeight: "700" },
+    uploadCard: { gap: 12, marginTop: 18, padding: 16, borderRadius: 16, backgroundColor: COLORS.card, borderWidth: 1, borderColor: COLORS.border },
+    categorias: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    categoria: { paddingVertical: 7, paddingHorizontal: 12, borderRadius: 999, borderWidth: 1, borderColor: COLORS.border },
+    categoriaAtiva: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryLight },
+    categoriaTexto: { color: COLORS.textSecondary, fontSize: 12 },
+    categoriaTextoAtiva: { color: COLORS.primaryDark, fontWeight: "700" },
+    fontes: { flexDirection: "row", gap: 8 },
+    fonte: { flex: 1, alignItems: "center", gap: 6, padding: 12, borderRadius: 12, backgroundColor: COLORS.background },
+    fonteTexto: { color: COLORS.text, fontSize: 11, fontWeight: "600" },
     pressionado: { opacity: 0.82, transform: [{ scale: 0.99 }] }
 });

@@ -12,8 +12,12 @@ import { useAuth } from "../../../context/AuthContext";
 import { useAlerta, motivoDoErro } from "../../../context/AlertaContext";
 import { getMyAppointmentsAsPsychologist } from "../../../services/api";
 import { Appointment } from "../../../types/clinic";
+import { Attachment } from "../../../types/clinic";
 import { formatarDia, formatarHora } from "../../../formatacao/data-hora";
 import { COLORS } from "../../../constants/cores";
+import { listAttachments } from "../../../services/api";
+import { baixarAnexo } from "../../../services/download";
+import { CartaoAnexo } from "../../../components/cartao-anexo";
 
 // O caminho da logo precisa de um nível a mais que os imports para constants.
 const LOGO = require("../../../../assets/images/elo-logo-branca.png");
@@ -23,25 +27,55 @@ export default function Solicitacoes() {
     const roteador = useRouter();
     const insets = useSafeAreaInsets();
     const { user } = useAuth();
-    const { mostrarErro } = useAlerta();
+    const { mostrarErro, mostrarSucesso } = useAlerta();
     // Guarda somente as consultas pendentes deste profissional.
     const [solicitacoes, setSolicitacoes] = useState<Appointment[]>([]);
     // Controla o indicador enquanto a lista é carregada.
     const [carregando, setCarregando] = useState(true);
+    const [anexos, setAnexos] = useState<Record<string, Attachment[]>>({});
+    const [baixando, setBaixando] = useState<string | null>(null);
 
     // Busca a agenda e mantém apenas os itens que ainda esperam confirmação.
     const carregarSolicitacoes = useCallback(async () => {
         if (!user) return;
         setCarregando(true);
         try {
-            const consultas = await getMyAppointmentsAsPsychologist(user.userId);
-            setSolicitacoes(consultas.filter((consulta) => consulta.status === "PENDING"));
+            const consultas = (await getMyAppointmentsAsPsychologist(user.userId)).filter((consulta) => consulta.status === "PENDING");
+            setSolicitacoes(consultas);
+            const pares = await Promise.all(consultas.map(async (consulta) => [consulta.id, await listAttachments(consulta.id, user.userId, "PSYCHOLOGIST")] as const));
+            setAnexos(Object.fromEntries(pares));
         } catch (erro) {
             mostrarErro("Erro ao carregar solicitações", motivoDoErro(erro));
         } finally {
             setCarregando(false);
         }
     }, [user, mostrarErro]);
+
+    // Baixa um documento somente depois que o serviço confirma a participação na consulta.
+    async function baixar(item: Attachment) {
+        if (!user) return;
+        setBaixando(item.id);
+        try {
+            const resultado = await baixarAnexo(item, user.userId, "PSYCHOLOGIST");
+            mostrarSucesso("Arquivo salvo", `Arquivo salvo em ${resultado.pasta}.`);
+        } catch (erro) {
+            mostrarErro("Erro ao baixar arquivo", motivoDoErro(erro));
+        } finally { setBaixando(null); }
+    }
+
+    // Baixa os documentos em sequência para não abrir vários diálogos juntos.
+    async function baixarTodos(consultaId: string) {
+        if (!user) return;
+        const itens = anexos[consultaId] ?? [];
+        setBaixando(consultaId);
+        try {
+            let destino = "pasta selecionada";
+            for (const item of itens) destino = (await baixarAnexo(item, user.userId, "PSYCHOLOGIST")).pasta;
+            mostrarSucesso("Arquivos salvos", `${itens.length} arquivos salvos em ${destino}.`);
+        } catch (erro) {
+            mostrarErro("Erro ao baixar arquivos", motivoDoErro(erro));
+        } finally { setBaixando(null); }
+    }
 
     // Carrega novamente a lista sempre que o usuário atual muda.
     useEffect(() => { void carregarSolicitacoes(); }, [carregarSolicitacoes]);
@@ -67,6 +101,7 @@ export default function Solicitacoes() {
                 ListEmptyComponent={<View style={estilos.vazio}>{carregando ? <ActivityIndicator size="large" color={COLORS.primary} /> : <><Ionicons name="mail-open-outline" size={30} color={COLORS.textSecondary} /><Text style={estilos.textoVazio}>Nenhuma solicitação pendente.</Text></>}</View>}
                 renderItem={({ item }) => (
                     <View style={estilos.conteudo}>
+                      <View>
                         {/* Abre a rota de resposta para este pedido. */}
                         <Pressable onPress={() => roteador.push(`/psicologo/solicitacao/${item.id}` as any)} style={({ pressed }) => [estilos.cartao, pressed && estilos.pressionado]}>
                             <View style={estilos.linha}>
@@ -76,10 +111,13 @@ export default function Solicitacoes() {
                                     <Text style={estilos.meta}>{formatarDia(item.date)}</Text>
                                     <Text style={estilos.meta}>{formatarHora(item.date)}</Text>
                                 </View>
-                                <View style={estilos.contagem}><Text style={estilos.contagemTexto}>1</Text></View>
+                                <View style={estilos.contagem}><Text style={estilos.contagemTexto}>{(anexos[item.id] ?? []).length}</Text></View>
                                 <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
                             </View>
                         </Pressable>
+                        {(anexos[item.id] ?? []).map((anexo) => <CartaoAnexo key={anexo.id} anexo={anexo} aoBaixar={() => void baixar(anexo)} carregando={baixando === anexo.id} />)}
+                        {(anexos[item.id] ?? []).length > 1 && <Pressable disabled={baixando === item.id} onPress={() => void baixarTodos(item.id)} style={estilos.baixarTodos}><Ionicons name="download-outline" size={17} color={COLORS.primaryDark} /><Text style={estilos.baixarTodosTexto}>{baixando === item.id ? "Baixando..." : "Baixar todos"}</Text></Pressable>}
+                      </View>
                     </View>
                 )}
             />
@@ -111,5 +149,7 @@ const estilos = StyleSheet.create({
     contagemTexto: { color: "#B4232F", fontSize: 12, fontWeight: "700" },
     vazio: { minHeight: 150, alignItems: "center", justifyContent: "center", gap: 10 },
     textoVazio: { color: COLORS.textSecondary, fontSize: 14 },
+    baixarTodos: { minHeight: 40, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 8, borderRadius: 999, backgroundColor: COLORS.primaryLight },
+    baixarTodosTexto: { color: COLORS.primaryDark, fontSize: 12, fontWeight: "700" },
     pressionado: { opacity: 0.85, transform: [{ scale: 0.99 }] }
 });

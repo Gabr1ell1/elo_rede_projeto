@@ -35,6 +35,8 @@ import { COLORS } from "../../../../constants/cores";
 import { formatarDia, formatarHora } from "../../../../formatacao/data-hora";
 // Falhas na consulta e em anexos aparecem no alerta global.
 import { useAlerta, motivoDoErro } from "../../../../context/AlertaContext";
+import { CartaoAnexo } from "../../../../components/cartao-anexo";
+import { baixarAnexo } from "../../../../services/download";
 
 const LOGO = require("../../../../../assets/images/elo-logo-branca.png");
 
@@ -74,7 +76,7 @@ export default function AppointmentDetail() {
     const insets = useSafeAreaInsets();
     const { id } = useLocalSearchParams<{ id: string }>();
     const { user, signOut } = useAuth();
-    const { mostrarErro } = useAlerta();
+    const { mostrarErro, mostrarSucesso } = useAlerta();
     const [appointment, setAppointment] = useState<Appointment | null>(null);
     const [items, setItems] = useState<Attachment[]>([]);
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
@@ -84,6 +86,7 @@ export default function AppointmentDetail() {
     const [category, setCategory] = useState<AttachmentCategory>("OTHER");
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [error, setError] = useState("");
+    const [baixando, setBaixando] = useState<string | null>(null);
 
     const load = useCallback(async () => {
         if (!id || !user) return;
@@ -103,6 +106,17 @@ export default function AppointmentDetail() {
     useEffect(() => {
         load();
     }, [load]);
+
+    // Salva o documento depois que o serviço confirma o vínculo do paciente com a consulta.
+    async function download(item: Attachment) {
+        if (!user) return;
+        setBaixando(item.id);
+        try {
+            const resultado = await baixarAnexo(item, user.userId, "PATIENT");
+            mostrarSucesso("Arquivo salvo", `Arquivo salvo em ${resultado.pasta}.`);
+        } catch (erro) { mostrarErro("Erro ao baixar arquivo", motivoDoErro(erro)); }
+        finally { setBaixando(null); }
+    }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
     async function addFile(source: "camera" | "gallery" | "file") {
@@ -389,55 +403,12 @@ export default function AppointmentDetail() {
                         </View>
                     ) : (
                         <View style={{ marginTop: 16 }}>
-                            {items.map((item) => {
-                                const isPdf = item.name.toLowerCase().endsWith(".pdf");
-                                return (
-                                    <View key={item.id} style={styles.attachment}>
-                                        <Pressable
-                                            onPress={() => Linking.openURL(item.uri)}
-                                            style={({ pressed }) => [
-                                                styles.attachmentMain,
-                                                pressed && styles.pressed
-                                            ]}
-                                        >
-                                            <View style={styles.attachmentIcon}>
-                                                <Ionicons
-                                                    name={isPdf ? "document-text-outline" : "image-outline"}
-                                                    size={22}
-                                                    color={COLORS.primaryDark}
-                                                />
-                                            </View>
-
-                                            <View style={styles.cardInfo}>
-                                                <Text style={styles.attachmentName} numberOfLines={1}>
-                                                    {item.name}
-                                                </Text>
-                                                <View style={styles.attachmentMeta}>
-                                                    <View style={styles.tag}>
-                                                        <Text style={styles.tagText}>{labels[item.category]}</Text>
-                                                    </View>
-                                                    <Text style={styles.metaText}>
-                                                        {new Date(item.createdAt).toLocaleDateString("pt-BR")}
-                                                    </Text>
-                                                </View>
-                                            </View>
-                                        </Pressable>
-
-                                        {item.uploadedBy === user?.userId && (
-                                            <Pressable
-                                                onPress={() => removeAttachment(item)}
-                                                accessibilityLabel="Remover anexo"
-                                                style={({ pressed }) => [
-                                                    styles.removeButton,
-                                                    pressed && styles.pressed
-                                                ]}
-                                            >
-                                                <Ionicons name="trash-outline" size={18} color="#C95C5C" />
-                                            </Pressable>
-                                        )}
-                                    </View>
-                                );
-                            })}
+                            {items.map((item) => (
+                                <View key={item.id}>
+                                    <CartaoAnexo anexo={item} aoBaixar={() => void download(item)} carregando={baixando === item.id} enviadoPeloPsicologo={item.uploadedBy === appointment?.psychologistId} />
+                                    {item.uploadedBy === user?.userId && <Pressable onPress={() => void removeAttachment(item)} style={styles.removeButton}><Ionicons name="trash-outline" size={17} color="#C95C5C" /><Text style={styles.removeLabel}>Remover documento</Text></Pressable>}
+                                </View>
+                            ))}
                         </View>
                     )}
                 </View>
@@ -802,13 +773,17 @@ const styles = StyleSheet.create({
         fontSize: 12
     },
     removeButton: {
-        width: 38,
+        alignSelf: "flex-end",
+        flexDirection: "row",
+        gap: 6,
         height: 38,
+        paddingHorizontal: 12,
         borderRadius: 19,
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "#FBEAEA"
     },
+    removeLabel: { color: "#C95C5C", fontSize: 11, fontWeight: "700" },
 
     // ===== ESTADOS =====
     errorBox: {
