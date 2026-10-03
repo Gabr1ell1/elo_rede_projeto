@@ -10,11 +10,14 @@ const ContextoAlerta = createContext<AlertaDados>({ mostrarErro: () => undefined
 
 // Recebe as telas filhas e disponibiliza o modal global de erros. Exemplo: usar em _layout.tsx.
 export function AlertaProvider({ children }: { children: React.ReactNode }) {
+    // Guarda o título que aparece em vermelho no modal.
     const [titulo, setTitulo] = useState("");
+    // Guarda a explicação que acompanha o título do erro.
     const [mensagem, setMensagem] = useState("");
+    // Controla se a janela de erro está aberta.
     const [visivel, setVisivel] = useState(false);
 
-    // Recebe título e motivo e abre o modal. Exemplo: mostrarErro("Erro de login", "Senha inválida").
+    // Recebe título e motivo e abre o modal. Exemplo: mostrarErro("Erro de login", "Senha inválida"); useCallback mantém a função estável.
     const mostrarErro = useCallback((novoTitulo: string, novoMotivo: string) => {
         setTitulo(novoTitulo);
         setMensagem(novoMotivo);

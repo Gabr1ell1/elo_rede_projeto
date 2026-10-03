@@ -194,6 +194,7 @@ export default function PsychologistProfileScreen() {
                             <Ionicons name="medkit-outline" size={14} color={COLORS.primaryDark} />
                             <Text style={styles.chipText}>Psicólogo(a)</Text>
                         </View>
+                        {/* Abre a tela onde o profissional pode enviar ou acompanhar o CRP. */}
                         <Pressable onPress={() => router.push("/psicologo/verificacao" as any)} style={({ pressed }) => [styles.seloCrp, pressed && styles.pressed]}>
                             <Text style={styles.textoSeloCrp}>{statusCrp === "VERIFICADO" ? "CRP verificado" : statusCrp === "AGUARDANDO" ? "Aguardando confirmação" : "Documentação não enviada"}</Text>
                             <Ionicons name="chevron-forward" size={15} color={COLORS.primaryDark} />

@@ -51,6 +51,7 @@ async function salvarDadosClinicos(): Promise<void> {
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe nenhum argumento e devolve perfis sem contatos privados. Exemplo: mockGetPsychologists().
 export async function mockGetPsychologists(): Promise<Psychologist[]> {
     await garantirDadosCarregados();
     // A lista geral não entrega telefones nem e-mails pessoais.
@@ -58,6 +59,7 @@ export async function mockGetPsychologists(): Promise<Psychologist[]> {
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe id e, opcionalmente, o dono da sessao; devolve o perfil permitido. Exemplo: mockGetPsychologistById("psi1", "psi1").
 export async function mockGetPsychologistById(
     id: string,
     requesterUserId?: string
@@ -75,6 +77,7 @@ export async function mockGetPsychologistById(
 }
 
 // A rede só mostra profissionais que escolheram aparecer e não inclui o usuário atual.
+// Recebe o usuario atual e devolve colegas visiveis na rede. Exemplo: mockBuscarRedeDePsicologos("psi1").
 export async function mockBuscarRedeDePsicologos(idUsuarioAtual: string): Promise<Psychologist[]> {
     await garantirDadosCarregados();
     return delay(PSYCHOLOGISTS
@@ -83,6 +86,7 @@ export async function mockBuscarRedeDePsicologos(idUsuarioAtual: string): Promis
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe o id e campos alterados; devolve o perfil salvo. Exemplo: atualizar especialidade e preco.
 export async function mockUpdatePsychologistProfile(id: string, changes: Pick<Psychologist, 'specialty' | 'price' | 'bio' | 'yearsOfExperience' | 'approach' | 'whatsapp' | 'email' | 'visibleInNetwork'>) {
     // A atualização usa o perfil existente ou cria a base com o mesmo userId.
     const item = await mockGarantirPerfilPsicologo(id);
@@ -120,6 +124,7 @@ export async function mockEnviarCrp(userId: string, crp: string): Promise<Psycho
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe paciente, profissional e horario; devolve o novo pedido pendente. Exemplo: solicitar um horario livre.
 export async function mockRequestAppointment(
     patientId: string,
     patientName: string,
@@ -146,6 +151,7 @@ export async function mockRequestAppointment(
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe id, usuario e papel; devolve a consulta se o usuario tiver acesso. Exemplo: abrir uma consulta propria.
 export async function mockGetAppointmentById(id: string, userId: string, role: "PATIENT" | "PSYCHOLOGIST") {
     await garantirDadosCarregados();
     const item = APPOINTMENTS.find((appointment) => appointment.id === id);
@@ -155,6 +161,7 @@ export async function mockGetAppointmentById(id: string, userId: string, role: "
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe a consulta e o paciente; devolve a consulta cancelada e libera o horario. Exemplo: cancelar uma solicitacao propria.
 export async function mockCancelAppointment(id: string, userId: string) {
     await garantirDadosCarregados();
     const item = APPOINTMENTS.find((appointment) => appointment.id === id);
@@ -168,6 +175,7 @@ export async function mockCancelAppointment(id: string, userId: string) {
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe consulta, usuario e papel; devolve os anexos acessiveis. Exemplo: abrir anexos de uma consulta.
 export async function mockListAttachments(appointmentId: string, userId: string, role: "PATIENT" | "PSYCHOLOGIST") {
     await garantirDadosCarregados();
     await mockGetAppointmentById(appointmentId, userId, role);
@@ -175,6 +183,7 @@ export async function mockListAttachments(appointmentId: string, userId: string,
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe arquivo validado e paciente; devolve o anexo guardado. Exemplo: anexar um PDF.
 export async function mockUploadAttachment(item: Attachment, userId: string) {
     await garantirDadosCarregados();
     await mockGetAppointmentById(item.appointmentId, userId, "PATIENT");
@@ -184,6 +193,7 @@ export async function mockUploadAttachment(item: Attachment, userId: string) {
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe o id do anexo e o autor; apaga o item se ele pertencer ao autor. Exemplo: remover um arquivo enviado.
 export async function mockDeleteAttachment(id: string, userId: string) {
     await garantirDadosCarregados();
     const item = ATTACHMENTS.find((entry) => entry.id === id);
@@ -193,11 +203,14 @@ export async function mockDeleteAttachment(id: string, userId: string) {
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe usuario e endereco local da foto; devolve o mesmo endereco depois de salvar. Exemplo: trocar avatar.
 export async function mockUploadAvatar(userId: string, uri: string) { await garantirDadosCarregados(); AVATARS[userId] = uri; await salvarDadosClinicos(); return uri; }
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe usuario e devolve o endereco de foto guardado, se existir. Exemplo: mostrar avatar do paciente.
 export async function mockGetAvatar(userId: string) { await garantirDadosCarregados(); return AVATARS[userId]; }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe paciente e devolve todas as consultas dele. Exemplo: montar a lista Minhas consultas.
 export async function mockGetAppointmentsByPatient(
     patientId: string
 ): Promise<Appointment[]> {
@@ -206,6 +219,7 @@ export async function mockGetAppointmentsByPatient(
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe psicologo e devolve consultas da agenda dele. Exemplo: contar pedidos pendentes.
 export async function mockGetAppointmentsByPsychologist(
     psychologistId: string
 ): Promise<Appointment[]> {
@@ -214,6 +228,7 @@ export async function mockGetAppointmentsByPsychologist(
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe consulta, novo estado e psicologo; devolve o item salvo e cria link ao confirmar. Exemplo: confirmar um pedido.
 export async function mockUpdateAppointmentStatus(
     appointmentId: string,
     status: Appointment["status"],

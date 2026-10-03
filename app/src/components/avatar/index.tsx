@@ -32,7 +32,6 @@ export function Avatar({
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [imageFailed, setImageFailed] = useState(false);
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
-    const [error, setError] = useState('');
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [menu, setMenu] = useState(false);
     const { mostrarErro } = useAlerta();
@@ -50,7 +49,6 @@ export function Avatar({
     async function choose(kind: Source) {
         setMenu(false);
         try {
-            setError('');
             const asset =
                 kind === 'camera'
                     ? await takePhoto()
@@ -72,7 +70,6 @@ export function Avatar({
             setImageFailed(false);
             setUri(next);
         } catch (e) {
-            setError('');
             mostrarErro('Erro ao trocar foto de perfil', motivoDoErro(e));
         }
     }
@@ -139,7 +136,6 @@ const styles = StyleSheet.create({
         borderWidth: 3,
         borderColor: '#FFFFFF'
     },
-    error: { color: '#C95C5C', textAlign: 'center' },
     overlay: {
         flex: 1,
         justifyContent: 'center',

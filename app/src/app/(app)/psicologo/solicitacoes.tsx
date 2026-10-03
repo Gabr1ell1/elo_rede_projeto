@@ -24,7 +24,9 @@ export default function Solicitacoes() {
     const insets = useSafeAreaInsets();
     const { user } = useAuth();
     const { mostrarErro } = useAlerta();
+    // Guarda somente as consultas pendentes deste profissional.
     const [solicitacoes, setSolicitacoes] = useState<Appointment[]>([]);
+    // Controla o indicador enquanto a lista é carregada.
     const [carregando, setCarregando] = useState(true);
 
     // Busca a agenda e mantém apenas os itens que ainda esperam confirmação.
@@ -41,6 +43,7 @@ export default function Solicitacoes() {
         }
     }, [user, mostrarErro]);
 
+    // Carrega novamente a lista sempre que o usuário atual muda.
     useEffect(() => { void carregarSolicitacoes(); }, [carregarSolicitacoes]);
 
     return (
@@ -64,6 +67,7 @@ export default function Solicitacoes() {
                 ListEmptyComponent={<View style={estilos.vazio}>{carregando ? <ActivityIndicator size="large" color={COLORS.primary} /> : <><Ionicons name="mail-open-outline" size={30} color={COLORS.textSecondary} /><Text style={estilos.textoVazio}>Nenhuma solicitação pendente.</Text></>}</View>}
                 renderItem={({ item }) => (
                     <View style={estilos.conteudo}>
+                        {/* Abre a rota de resposta para este pedido. */}
                         <Pressable onPress={() => roteador.push(`/psicologo/solicitacao/${item.id}` as any)} style={({ pressed }) => [estilos.cartao, pressed && estilos.pressionado]}>
                             <View style={estilos.linha}>
                                 <Avatar userId={item.patientId} size={54} />

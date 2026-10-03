@@ -27,6 +27,7 @@ function delay<T>(value: T, ms = 500): Promise<T> {
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe nome de usuario e senha; devolve a sessao ou informa a causa da falha. Exemplo: entrar com paciente1.
 export async function mockLogin(data: AuthRequest): Promise<SessionUser> {
     await garantirUsuariosCarregados();
     const record = FAKE_USERS[data.username];
@@ -44,6 +45,7 @@ export async function mockLogin(data: AuthRequest): Promise<SessionUser> {
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
+// Recebe os campos de cadastro; cria usuario e perfil profissional quando necessario. Exemplo: cadastrar um psicologo.
 export async function mockRegister(data: RegisterRequest): Promise<void> {
     await garantirUsuariosCarregados();
     const userId = `mock-${Object.keys(FAKE_USERS).length + 1}`;

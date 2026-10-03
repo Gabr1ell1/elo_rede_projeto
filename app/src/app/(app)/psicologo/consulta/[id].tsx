@@ -20,8 +20,11 @@ export default function DetalheConsultaPsicologo() {
     const roteador = useRouter();
     const { user } = useAuth();
     const { mostrarErro } = useAlerta();
+    // Guarda as informações da consulta atual.
     const [consulta, setConsulta] = useState<Appointment | null>(null);
+    // Guarda os anexos associados ao agendamento.
     const [anexos, setAnexos] = useState<Attachment[]>([]);
+    // Controla o indicador durante as chamadas de carregamento.
     const [carregando, setCarregando] = useState(true);
 
     // Busca consulta e anexos ao abrir a rota, mostrando o motivo se o serviço falhar.
@@ -38,6 +41,7 @@ export default function DetalheConsultaPsicologo() {
         }
     }, [id, user, mostrarErro]);
 
+    // Carrega novamente quando o identificador da rota ou o usuário muda.
     useEffect(() => { void carregar(); }, [carregar]);
 
     // Abre o link FALSO da sala de demonstração.
@@ -75,7 +79,9 @@ export default function DetalheConsultaPsicologo() {
                     <View style={estilos.linkCard}>
                         <Text style={estilos.avisoLink}>Link FALSO para demonstração</Text>
                         <Text style={estilos.linkUrl}>{consulta.linkConsulta}</Text>
+                        {/* Abre o endereço FALSO no aplicativo de navegação disponível. */}
                         <Pressable onPress={() => void entrarNaConsulta()} style={({ pressed }) => [estilos.botao, pressed && estilos.pressionado]}><Ionicons name="videocam-outline" size={18} color="#FFFFFF" /><Text style={estilos.textoBotao}>Entrar na consulta</Text></Pressable>
+                        {/* Copia o endereço FALSO para a área de transferência. */}
                         <Pressable onPress={() => void copiarLink()} style={({ pressed }) => [estilos.copiar, pressed && estilos.pressionado]}><Ionicons name="copy-outline" size={17} color={COLORS.primaryDark} /><Text style={estilos.textoCopiar}>Copiar link</Text></Pressable>
                     </View>
                 )}

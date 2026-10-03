@@ -19,7 +19,9 @@ export function MenuSanduiche() {
     const insets = useSafeAreaInsets();
     const { user, signOut } = useAuth();
     const { mostrarErro } = useAlerta();
+    // Guarda a contagem que aparece sobre o atalho de solicitações.
     const [pendentes, setPendentes] = useState(0);
+    // Controla o diálogo para evitar restaurar os dados com um toque acidental.
     const [confirmarRestauracao, setConfirmarRestauracao] = useState(false);
     const psicologo = user?.role === 'PSYCHOLOGIST';
 
@@ -38,6 +40,7 @@ export function MenuSanduiche() {
         ];
 
     // Conta solicitações pendentes para mostrar o badge no atalho da navbar do psicólogo.
+    // Atualiza o contador de solicitações do psicólogo ao montar o menu.
     useEffect(() => {
         if (!psicologo || !user) return;
         getMyAppointmentsAsPsychologist(user.userId)
@@ -58,8 +61,9 @@ export function MenuSanduiche() {
 
     return (
         <>
+            {/* Este atalho abre a lista de solicitações pela rota do psicólogo. */}
             {psicologo && (
-                <Pressable accessibilityRole="button" accessibilityLabel="Solicitações de consulta" onPress={() => router.push('/psicologo/solicitacoes' as never)} style={({ pressed }) => [styles.requestShortcut, pressed && styles.pressed]}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Solicitações de consulta" onPress={() => router.push('/psicologo/solicitacoes' as never)} style={({ pressed }) => [styles.requestShortcut, pressed && styles.pressed]}>
                     <Ionicons name={caminho.endsWith('/solicitacoes') ? 'mail-unread' : 'mail-unread-outline'} size={22} color={COLORS.card} />
                     {pendentes > 0 && <View style={styles.shortcutBadge}><Text style={styles.badgeText}>{pendentes}</Text></View>}
                 </Pressable>

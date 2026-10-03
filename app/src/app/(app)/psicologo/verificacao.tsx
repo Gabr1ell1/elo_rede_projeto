@@ -29,8 +29,11 @@ export default function VerificacaoCrp() {
     const insets = useSafeAreaInsets();
     const { user } = useAuth();
     const { mostrarErro } = useAlerta();
+    // Guarda o CRP digitado pelo psicólogo até o serviço salvar.
     const [crp, setCrp] = useState("");
+    // Guarda o selo que a tela mostra: sem envio, aguardando ou verificado.
     const [statusCrp, setStatusCrp] = useState<Psychologist["statusCrp"]>("SEM_ENVIO");
+    // Desativa o botão enquanto o envio está sendo salvo.
     const [enviando, setEnviando] = useState(false);
 
     // Busca o estado salvo ao abrir a tela para manter o formulário sincronizado.
@@ -47,6 +50,7 @@ export default function VerificacaoCrp() {
         }
     }, [user, mostrarErro]);
 
+    // Atualiza o formulário uma vez quando o perfil atual está disponível.
     useEffect(() => { void atualizarStatus(); }, [atualizarStatus]);
 
     // Enquanto aguarda, consulta o perfil a cada segundo para refletir a mudança automática do mock.
@@ -114,6 +118,7 @@ export default function VerificacaoCrp() {
                                 <Text style={estilos.textoBotao}>{aguarda ? "Aguardando confirmação" : "Enviar para verificação"}</Text>
                             </Pressable>
                         )}
+                        {/* Ao continuar, o layout consulta o estado atualizado e libera a agenda. */}
                         {verificado && (
                             <Pressable onPress={() => roteador.replace("/psicologo" as any)} style={({ pressed }) => [estilos.botao, pressed && estilos.pressionado]}>
                                 <Text style={estilos.textoBotao}>Continuar para o aplicativo</Text>

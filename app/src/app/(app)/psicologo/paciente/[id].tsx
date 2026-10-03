@@ -19,10 +19,13 @@ export default function PerfilPaciente() {
     const roteador = useRouter();
     const { user } = useAuth();
     const { mostrarErro } = useAlerta();
+    // Guarda apenas os horários e estados de consulta que pertencem ao paciente.
     const [consultas, setConsultas] = useState<Appointment[]>([]);
+    // Controla o indicador enquanto as consultas são buscadas.
     const [carregando, setCarregando] = useState(true);
 
     // Filtra as consultas visíveis do próprio psicólogo para exibir somente as do paciente escolhido.
+    // Carrega consultas quando o paciente e o psicólogo da sessão estão identificados.
     useEffect(() => {
         if (!user || !id) return;
         getMyAppointmentsAsPsychologist(user.userId)
@@ -40,6 +43,7 @@ export default function PerfilPaciente() {
                 <Avatar userId={id ?? ""} size={86} />
                 <Text style={estilos.nome}>{nome}</Text>
                 <Text style={estilos.subtitulo}>Consultas com você</Text>
+                {/* Abre o detalhe da consulta escolhida ao tocar em um item da lista. */}
                 {carregando ? <ActivityIndicator color={COLORS.primary} /> : consultas.length ? consultas.map((consulta) => (
                     <Pressable key={consulta.id} onPress={() => roteador.push(`/psicologo/consulta/${consulta.id}` as any)} style={({ pressed }) => [estilos.consulta, pressed && estilos.pressionado]}>
                         <Text style={estilos.data}>{formatarDataHora(consulta.date)}</Text>

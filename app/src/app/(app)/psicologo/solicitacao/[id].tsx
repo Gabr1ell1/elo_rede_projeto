@@ -22,12 +22,17 @@ export default function DetalheSolicitacao() {
     const roteador = useRouter();
     const { user } = useAuth();
     const { mostrarErro } = useAlerta();
+    // Guarda os dados de paciente e horário devolvidos pelo serviço.
     const [consulta, setConsulta] = useState<Appointment | null>(null);
+    // Controla a espera enquanto o pedido é carregado.
     const [carregando, setCarregando] = useState(true);
+    // Guarda a confirmação ou recusa que aguarda resposta no diálogo.
     const [acao, setAcao] = useState<AcaoSolicitacao | null>(null);
+    // Desativa ações enquanto a mudança está sendo salva.
     const [salvando, setSalvando] = useState(false);
 
     // Busca os dados permitidos deste pedido ao abrir a tela.
+    // Busca a solicitação assim que os parâmetros da rota e a sessão estiverem prontos.
     useEffect(() => {
         if (!id || !user) return;
         getAppointmentById(id, user.userId, "PSYCHOLOGIST")
@@ -41,6 +46,7 @@ export default function DetalheSolicitacao() {
         if (!id || !user || !acao) return;
         setSalvando(true);
         try {
+            // O serviço grava o novo estado e gera o link quando a ação é confirmar.
             await updateAppointmentStatus(id, acao, user.userId);
             roteador.replace("/psicologo/solicitacoes" as any);
         } catch (erro) {
@@ -65,6 +71,7 @@ export default function DetalheSolicitacao() {
                 </View>
                 <View style={estilos.linhaInfo}><Ionicons name="calendar-outline" size={19} color={COLORS.primaryDark} /><Text style={estilos.valor}>{formatarDia(consulta.date)}</Text></View>
                 <View style={estilos.linhaInfo}><Ionicons name="time-outline" size={19} color={COLORS.primaryDark} /><Text style={estilos.valor}>{formatarHora(consulta.date)}</Text></View>
+                {/* Navega para o perfil do paciente com os dados já existentes. */}
                 <Pressable onPress={() => roteador.push(`/psicologo/paciente/${consulta.patientId}` as any)} style={({ pressed }) => [estilos.botaoSecundario, pressed && estilos.pressionado]}>
                     <Ionicons name="person-outline" size={18} color={COLORS.primaryDark} /><Text style={estilos.textoSecundario}>Ver perfil do paciente</Text>
                 </Pressable>
