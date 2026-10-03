@@ -5,7 +5,7 @@
 import { Appointment, Attachment, Psychologist } from "../types/clinic";
 import { carregarDados, salvarDados } from "./armazenamento";
 import { MOCK_PSICOLOGOS } from "./mockPsicologos";
-import { MOCK_CONSULTAS } from "./mockConsultas";
+import { criarConsultasExemplo, MOCK_CONSULTAS } from "./mockConsultas";
 import { MOCK_ANEXOS } from "./mockAnexos";
 import { MOCK_FOTOS } from "./mockFotos";
 import { gerarLinkConsulta } from "../links/consulta";
@@ -25,10 +25,22 @@ let dadosCarregados: Promise<void> | null = null;
 async function garantirDadosCarregados(): Promise<void> {
     if (!dadosCarregados) {
         dadosCarregados = (async () => {
+            const juntarPorId = <T extends { id: string }>(salvos: T[], exemplos: T[]) => {
+                const ids = new Set(salvos.map((item) => item.id));
+                return [...salvos, ...exemplos.filter((item) => !ids.has(item.id))];
+            };
             const psicologosSalvos = await carregarDados("@Elo:psicologos", MOCK_PSICOLOGOS);
-            PSYCHOLOGISTS = psicologosSalvos.map((psicologo) => ({ ...psicologo, statusCrp: psicologo.statusCrp ?? "SEM_ENVIO" }));
-            APPOINTMENTS = await carregarDados("@Elo:consultas", MOCK_CONSULTAS);
-            ATTACHMENTS = await carregarDados("@Elo:anexos", MOCK_ANEXOS);
+            PSYCHOLOGISTS = juntarPorId(psicologosSalvos, MOCK_PSICOLOGOS).map((psicologo) => ({ ...psicologo, statusCrp: psicologo.statusCrp ?? "SEM_ENVIO" }));
+            const consultasSalvas = await carregarDados("@Elo:consultas", MOCK_CONSULTAS);
+            const exemplosAtuais = criarConsultasExemplo();
+            const datasAtuais = new Map(exemplosAtuais.map((consulta) => [consulta.id, consulta.date]));
+            APPOINTMENTS = juntarPorId(consultasSalvas, exemplosAtuais).map((consulta) =>
+                consulta.id.startsWith("kleber-pending-") && new Date(consulta.date).getTime() <= Date.now()
+                    ? { ...consulta, date: datasAtuais.get(consulta.id) ?? consulta.date }
+                    : consulta
+            );
+            const anexosSalvos = await carregarDados("@Elo:anexos", MOCK_ANEXOS);
+            ATTACHMENTS = juntarPorId(anexosSalvos, MOCK_ANEXOS);
             AVATARS = await carregarDados("@Elo:fotos", MOCK_FOTOS);
             // Migra dados antigos: garante estado CRP e link em consultas já confirmadas.
             APPOINTMENTS = APPOINTMENTS.map((consulta) => consulta.status === "CONFIRMED" && !consulta.linkConsulta
@@ -186,12 +198,54 @@ export async function mockListAttachments(appointmentId: string, userId: string,
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 // Recebe arquivo validado e paciente; devolve o anexo guardado. Exemplo: anexar um PDF.
-export async function mockUploadAttachment(item: Attachment, userId: string) {
+export async function mockUploadAttachment(item: Attachment, userId: string, role: "PATIENT" | "PSYCHOLOGIST") {
     await garantirDadosCarregados();
-    await mockGetAppointmentById(item.appointmentId, userId, "PATIENT");
+    const consulta = await mockGetAppointmentById(item.appointmentId, userId, role);
+    if (role === "PSYCHOLOGIST" && consulta.status !== "CONFIRMED") throw new Error("O psicólogo só pode enviar documentos em consultas confirmadas.");
     ATTACHMENTS = [...ATTACHMENTS, item];
     await salvarDadosClinicos();
     return delay(item);
+}
+
+// Cria exemplos de consultas e documentos somente na primeira entrada de cada paciente.
+export async function mockGarantirConsultasDeDemonstracaoPaciente(patientId: string, patientName: string): Promise<void> {
+    await garantirDadosCarregados();
+    const chave = `@Elo:demo-paciente:${patientId}`;
+    if (await carregarDados(chave, false)) return;
+    const psicologo = PSYCHOLOGISTS.find((item) => item.userId === "kleber");
+    const nomePsicologo = psicologo?.name ?? "Kleber Martins";
+    const dataRelativa = (dias: number, hora: number) => {
+        const data = new Date();
+        data.setDate(data.getDate() + dias);
+        data.setHours(hora, 0, 0, 0);
+        const pad = (valor: number) => String(valor).padStart(2, "0");
+        return `${data.getFullYear()}-${pad(data.getMonth() + 1)}-${pad(data.getDate())}T${pad(data.getHours())}:00:00`;
+    };
+    const ids = [`demo-${patientId}-realizada-1`, `demo-${patientId}-realizada-2`, `demo-${patientId}-futura`];
+    const novasConsultas: Appointment[] = [
+        { id: ids[0], patientId, patientName, psychologistId: "kleber", psychologistName: nomePsicologo, date: dataRelativa(-21, 10), status: "CONFIRMED", linkConsulta: "https://meet.elo.fake/paciente-anterior-1" },
+        { id: ids[1], patientId, patientName, psychologistId: "kleber", psychologistName: nomePsicologo, date: dataRelativa(-7, 15), status: "CONFIRMED", linkConsulta: "https://meet.elo.fake/paciente-anterior-2" },
+        { id: ids[2], patientId, patientName, psychologistId: "kleber", psychologistName: nomePsicologo, date: dataRelativa(14, 11), status: "CONFIRMED", linkConsulta: "https://meet.elo.fake/paciente-futura" },
+    ];
+    const novosAnexos: Attachment[] = [
+        { id: `${ids[0]}-laudo`, appointmentId: ids[0], name: "laudo-psicologico.pdf", mimeType: "application/pdf", size: 1450, category: "REPORT", uri: "elo-asset:laudo-psicologico", createdAt: new Date().toISOString(), uploadedBy: "kleber" },
+        { id: `${ids[1]}-exame`, appointmentId: ids[1], name: "exame-sangue.pdf", mimeType: "application/pdf", size: 1450, category: "EXAM", uri: "elo-asset:exame-sangue", createdAt: new Date().toISOString(), uploadedBy: "kleber" },
+        { id: `${ids[1]}-atestado`, appointmentId: ids[1], name: "atestado.pdf", mimeType: "application/pdf", size: 1450, category: "CERTIFICATE", uri: "elo-asset:atestado", createdAt: new Date().toISOString(), uploadedBy: "kleber" },
+    ];
+    APPOINTMENTS = juntarConsultas(APPOINTMENTS, novasConsultas);
+    ATTACHMENTS = juntarAnexos(ATTACHMENTS, novosAnexos);
+    await salvarDadosClinicos();
+    await salvarDados(chave, true);
+}
+
+function juntarConsultas(atuais: Appointment[], novas: Appointment[]): Appointment[] {
+    const ids = new Set(atuais.map((item) => item.id));
+    return [...atuais, ...novas.filter((item) => !ids.has(item.id))];
+}
+
+function juntarAnexos(atuais: Attachment[], novos: Attachment[]): Attachment[] {
+    const ids = new Set(atuais.map((item) => item.id));
+    return [...atuais, ...novos.filter((item) => !ids.has(item.id))];
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
@@ -255,7 +309,7 @@ export async function mockUpdateAppointmentStatus(
 // Restaura os exemplos na memória após armazenamento.ts apagar as chaves salvas.
 export function mockRestaurarClinica(): void {
     PSYCHOLOGISTS = JSON.parse(JSON.stringify(MOCK_PSICOLOGOS)) as Psychologist[];
-    APPOINTMENTS = JSON.parse(JSON.stringify(MOCK_CONSULTAS)) as Appointment[];
+    APPOINTMENTS = JSON.parse(JSON.stringify(criarConsultasExemplo())) as Appointment[];
     ATTACHMENTS = JSON.parse(JSON.stringify(MOCK_ANEXOS)) as Attachment[];
     AVATARS = JSON.parse(JSON.stringify(MOCK_FOTOS)) as Record<string, string>;
     dadosCarregados = Promise.resolve();

@@ -8,7 +8,8 @@ import {
     login as loginApi,
     register as registerApi,
     logout as logoutApi,
-    getPsychologistById
+    getPsychologistById,
+    garantirConsultasDeDemonstracaoPaciente
 } from "../services/api";
 import { setUnauthorizeHandler } from "../integration/httpClient";
 import { AuthRequest, RegisterRequest, Role, SessionUser } from "../types/auth";
@@ -98,6 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const atualizado = { ...user, role };
         setUser(atualizado);
         await AsyncStorage.setItem("@Auth:user", JSON.stringify(atualizado));
+        if (role === "PATIENT") await garantirConsultasDeDemonstracaoPaciente(user.userId, user.username);
         redirectByRole(role);
     }
 
@@ -145,6 +147,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             const sessionUser = await loginApi(data);
             await persistSession(sessionUser);
+            if (sessionUser.role === "PATIENT") {
+                await garantirConsultasDeDemonstracaoPaciente(sessionUser.userId, sessionUser.username);
+            }
             redirectByRole(sessionUser.role);
             return { ok: true };
         } catch (erro) {

@@ -29,6 +29,7 @@ import {
     mockBuscarRedeDePsicologos,
     mockEnviarCrp,
     mockConcluirVerificacaoCrp,
+    mockGarantirConsultasDeDemonstracaoPaciente,
     mockRestaurarClinica
 } from '../data/mockClinic';
 
@@ -67,7 +68,9 @@ export const login = async (data: AuthRequest): Promise<SessionUser> => {
         : await carregarPerfilUsuario(username);
     if (username.toLowerCase() === 'kleber') await salvarPerfilUsuario(username, 'PSYCHOLOGIST');
     return {
-        userId: String(servidor.userId ?? servidor.id ?? servidor.username ?? username),
+        userId: username.toLowerCase() === 'kleber'
+            ? 'kleber'
+            : String(servidor.userId ?? servidor.id ?? servidor.username ?? username),
         username,
         role,
     };
@@ -145,6 +148,10 @@ export async function concluirVerificacaoCrpMock(userId: string): Promise<void> 
     await mockConcluirVerificacaoCrp(userId);
 }
 
+export async function garantirConsultasDeDemonstracaoPaciente(userId: string, nome: string): Promise<void> {
+    if (USE_MOCK_CLINIC) await mockGarantirConsultasDeDemonstracaoPaciente(userId, nome);
+}
+
 export const requestAppointment = async (
     patientId: string,
     patientName: string,
@@ -212,11 +219,11 @@ export async function listAttachments(appointmentId: string, userId: string, rol
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
-export async function uploadAttachment(appointmentId: string, file: { uri: string; name: string; mimeType: string; size: number; blob?: Blob }, category: AttachmentCategory, userId: string) {
+export async function uploadAttachment(appointmentId: string, file: { uri: string; name: string; mimeType: string; size: number; blob?: Blob }, category: AttachmentCategory, userId: string, role: 'PATIENT' | 'PSYCHOLOGIST') {
     if (file.size > 10 * 1024 * 1024) throw new Error('O arquivo deve ter no máximo 10 MB.');
     if (!/^(image\/(jpeg|png|webp|heic)|application\/pdf)$/i.test(file.mimeType)) throw new Error('Use um arquivo JPG, PNG, WEBP, HEIC ou PDF.');
     const item: Attachment = { id: `${Date.now()}`, appointmentId, name: file.name, mimeType: file.mimeType, size: file.size, category, uri: file.uri, createdAt: new Date().toISOString(), uploadedBy: userId };
-    if (USE_MOCK_CLINIC) return mockUploadAttachment(item, userId);
+    if (USE_MOCK_CLINIC) return mockUploadAttachment(item, userId, role);
     const data = new FormData();
     if (file.blob) data.append('file', file.blob, file.name);
     else data.append('file', { uri: file.uri, name: file.name, type: file.mimeType } as unknown as Blob);

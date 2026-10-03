@@ -135,7 +135,7 @@ export default function AppointmentDetail() {
                 blob: fileInfo.file
             };
 
-            await uploadAttachment(id!, file, category, user!.userId);
+            await uploadAttachment(id!, file, category, user!.userId, "PATIENT");
             await load();
         } catch (e) {
             setError("");
