@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Apresenta uma tela ou layout; o Expo Router usa a pasta para organizar as rotas.
+// Onde ele é usado: src/app/(auth)/cadastro.tsx é importado pelas telas ou componentes correspondentes.
+
 // Esta página mostra e envia o formulário de criação de conta.
 import { useState } from "react";
 import {
@@ -20,19 +23,26 @@ import { COLORS } from "../../constants/cores";
 const LOGO = require("../../../assets/images/elo-logo-branca.png");
 
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function Register() {
   const { signUp } = useAuth();
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
   const [username, setUsername] = useState("");
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
   const [email, setEmail] = useState("");
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("PATIENT");
 
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
   const [error, setError] = useState("");
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
   const [success, setSuccess] = useState(false);
 
   const { width } = useWindowDimensions();
   const isMobile = width < 700;
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
   async function handleRegister() {
     setError("");
     const result = await signUp({
@@ -245,6 +255,7 @@ export default function Register() {
   );
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 function RoleOption({
   label,
   selected,
@@ -275,6 +286,7 @@ function RoleOption({
   );
 }
 
+// Este bloco concentra os estilos para manter o visual desta tela ou componente organizado.
 const styles = StyleSheet.create({
 
   /* =========================

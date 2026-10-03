@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Centraliza valores constantes usados em diferentes partes do app.
+// Onde ele é usado: src/constants/cores.ts é importado pelas telas ou componentes correspondentes.
+
 // Este arquivo reúne as cores usadas para manter o visual consistente.
 /**
  * Below are the colors that are used in the app. The colors are defined in the light and dark mode.

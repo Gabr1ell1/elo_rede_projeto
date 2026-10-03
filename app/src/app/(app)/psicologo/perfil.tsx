@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Apresenta uma tela ou layout; o Expo Router usa a pasta para organizar as rotas.
+// Onde ele é usado: src/app/(app)/psicologo/perfil.tsx é importado pelas telas ou componentes correspondentes.
+
 // Esta página mostra e atualiza o perfil profissional do psicólogo.
 import { useEffect, useState } from "react";
 import {
@@ -23,16 +26,24 @@ import { COLORS } from "../../../constants/cores";
 
 const LOGO = require("../../../../assets/images/elo-logo-branca.png");
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function PsychologistProfileScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { user, signOut } = useAuth();
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [specialty, setSpecialty] = useState("");
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [price, setPrice] = useState("");
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [bio, setBio] = useState("");
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [loading, setLoading] = useState(true);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [message, setMessage] = useState("");
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [success, setSuccess] = useState(false);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [saving, setSaving] = useState(false);
     const [focused, setFocused] = useState<string | null>(null);
     // Este estado guarda os anos de experiência digitados pelo profissional.
@@ -41,6 +52,7 @@ export default function PsychologistProfileScreen() {
     const [abordagem, setAbordagem] = useState("");
     // Estes estados guardam contatos para os colegas, quando a rede estiver ligada.
     const [whatsapp, setWhatsapp] = useState("");
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [email, setEmail] = useState("");
     // Este estado controla se o perfil aparece na rede de psicólogos.
     const [visivelNaRede, setVisivelNaRede] = useState(false);
@@ -390,6 +402,7 @@ export default function PsychologistProfileScreen() {
     );
 }
 
+// Este bloco concentra os estilos para manter o visual desta tela ou componente organizado.
 const styles = StyleSheet.create({
     screen: {
         flex: 1,

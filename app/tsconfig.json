@@ -1,3 +1,5 @@
+// Para que serve este arquivo: define como o TypeScript verifica o app e resolve imports.
+// Onde ele e usado: o Expo e o comando tsc usam estas regras durante desenvolvimento e compilacao.
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {

@@ -1,7 +1,11 @@
+// Para que serve este arquivo: Fornece dados de demonstração para os modos mock.
+// Onde ele é usado: src/data/mockClinic.ts é importado pelas telas ou componentes correspondentes.
+
 // Estes dados simulam profissionais, consultas e anexos da clínica.
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Appointment, Attachment, Psychologist } from "../types/clinic";
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 function delay<T>(value: T, ms = 400): Promise<T> {
     return new Promise((resolve) => setTimeout(() => resolve(value), ms));
 }
@@ -82,11 +86,13 @@ async function loadAttachments() {
     await attachmentsLoaded;
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockGetPsychologists(): Promise<Psychologist[]> {
     // A lista geral não entrega telefones nem e-mails pessoais.
     return delay(PSYCHOLOGISTS.map(({ email, whatsapp, ...psicologo }) => psicologo));
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockGetPsychologistById(
     id: string,
     requesterUserId?: string
@@ -106,6 +112,7 @@ export async function mockBuscarRedeDePsicologos(idUsuarioAtual: string): Promis
         .map((psicologo) => ({ ...psicologo })));
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockUpdatePsychologistProfile(id: string, changes: Pick<Psychologist, 'specialty' | 'price' | 'bio' | 'yearsOfExperience' | 'approach' | 'whatsapp' | 'email' | 'visibleInNetwork'>) {
     const item = PSYCHOLOGISTS.find((entry) => entry.userId === id || entry.id === id);
     if (!item) throw new Error('Perfil profissional não encontrado.');
@@ -113,6 +120,7 @@ export async function mockUpdatePsychologistProfile(id: string, changes: Pick<Ps
     return delay(item);
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockRequestAppointment(
     patientId: string,
     patientName: string,
@@ -136,6 +144,7 @@ export async function mockRequestAppointment(
     return delay(appointment);
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockGetAppointmentById(id: string, userId: string, role: "PATIENT" | "PSYCHOLOGIST") {
     const item = APPOINTMENTS.find((appointment) => appointment.id === id);
     if (!item) throw new Error("Consulta não encontrada.");
@@ -143,6 +152,7 @@ export async function mockGetAppointmentById(id: string, userId: string, role: "
     return delay(item);
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockCancelAppointment(id: string, userId: string) {
     const item = APPOINTMENTS.find((appointment) => appointment.id === id);
     if (!item || item.patientId !== userId) throw new Error("403: Acesso negado.");
@@ -153,12 +163,14 @@ export async function mockCancelAppointment(id: string, userId: string) {
     return delay(item);
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockListAttachments(appointmentId: string, userId: string, role: "PATIENT" | "PSYCHOLOGIST") {
     await loadAttachments();
     await mockGetAppointmentById(appointmentId, userId, role);
     return delay(ATTACHMENTS.filter((item) => item.appointmentId === appointmentId));
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockUploadAttachment(item: Attachment, userId: string) {
     await loadAttachments();
     await mockGetAppointmentById(item.appointmentId, userId, "PATIENT");
@@ -167,6 +179,7 @@ export async function mockUploadAttachment(item: Attachment, userId: string) {
     return delay(item);
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockDeleteAttachment(id: string, userId: string) {
     await loadAttachments();
     const item = ATTACHMENTS.find((entry) => entry.id === id);
@@ -175,21 +188,26 @@ export async function mockDeleteAttachment(id: string, userId: string) {
     await AsyncStorage.setItem("@Clinic:attachments", JSON.stringify(ATTACHMENTS));
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockUploadAvatar(userId: string, uri: string) { AVATARS[userId] = uri; return uri; }
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockGetAvatar(userId: string) { return AVATARS[userId]; }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockGetAppointmentsByPatient(
     patientId: string
 ): Promise<Appointment[]> {
     return delay(APPOINTMENTS.filter((a) => a.patientId === patientId));
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockGetAppointmentsByPsychologist(
     psychologistId: string
 ): Promise<Appointment[]> {
     return delay(APPOINTMENTS.filter((a) => a.psychologistId === psychologistId));
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockUpdateAppointmentStatus(
     appointmentId: string,
     status: Appointment["status"],

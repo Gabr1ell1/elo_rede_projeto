@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Compartilha estado de autenticação e ações entre telas.
+// Onde ele é usado: src/context/AuthContext.tsx é importado pelas telas ou componentes correspondentes.
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
@@ -30,23 +33,29 @@ function redirectByRole(role: SessionUser["role"]) {
     }
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<SessionUser | null>(null);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [isLoading, setIsLoading] = useState(true);
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
     async function persistSession(sessionUser: SessionUser) {
         setUser(sessionUser);
         setIsAuthenticated(true);
         await AsyncStorage.setItem("@Auth:user", JSON.stringify(sessionUser));
     }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
     async function clearSession() {
         setUser(null);
         setIsAuthenticated(false);
         await AsyncStorage.removeItem("@Auth:user");
     }
 
+// Este efeito sincroniza a tela com dados, autenticacao ou ciclo de vida do componente.
     useEffect(() => {
         (async () => {
             // Modo mock: como não existe cookie de verdade, restauramos
@@ -62,6 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })();
     }, []);
 
+// Este efeito sincroniza a tela com dados, autenticacao ou ciclo de vida do componente.
     useEffect(() => {
         setUnauthorizeHandler(() => {
             clearSession();
@@ -69,6 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
     }, []);
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
     async function signIn(data: AuthRequest) {
         try {
             const sessionUser = await loginApi(data);
@@ -80,6 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
     async function signUp(data: RegisterRequest) {
         try {
             await registerApi(data);
@@ -92,6 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
     async function signOut() {
         try {
             await logoutApi();

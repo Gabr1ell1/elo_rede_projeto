@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Apresenta uma tela ou layout; o Expo Router usa a pasta para organizar as rotas.
+// Onde ele é usado: src/app/(app)/psicologo/rede.tsx é importado pelas telas ou componentes correspondentes.
+
 // Esta tela lista os colegas que aceitaram aparecer na rede profissional.
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -23,6 +26,7 @@ import { COLORS } from "../../../constants/cores";
 // A logo precisa subir uma pasta a mais que o caminho das constantes.
 const LOGO_REDE = require("../../../../assets/images/elo-logo-branca.png");
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function RedeDePsicologos() {
     const router = useRouter();
     const insets = useSafeAreaInsets();

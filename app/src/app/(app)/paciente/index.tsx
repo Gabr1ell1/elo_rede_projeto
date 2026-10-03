@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Apresenta uma tela ou layout; o Expo Router usa a pasta para organizar as rotas.
+// Onde ele é usado: src/app/(app)/paciente/index.tsx é importado pelas telas ou componentes correspondentes.
+
 // Esta é a página inicial do paciente, com a lista de profissionais.
 import { useEffect, useState } from "react";
 import {
@@ -22,15 +25,18 @@ import { COLORS } from "../../../constants/cores";
 // Coloque o arquivo em: app/assets/images/elo-logo-branca.png
 const LOGO = require("../../../../assets/images/elo-logo-branca.png");
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function PatientHome() {
     const router = useRouter();
     const { user, signOut } = useAuth();
     const insets = useSafeAreaInsets();
     const [psychologists, setPsychologists] = useState<Psychologist[]>([]);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [loading, setLoading] = useState(true);
 
     const username = (user?.username ?? "").trim();
 
+// Este efeito sincroniza a tela com dados, autenticacao ou ciclo de vida do componente.
     useEffect(() => {
         getPsychologists()
             .then(setPsychologists)
@@ -185,6 +191,7 @@ export default function PatientHome() {
     );
 }
 
+// Este bloco concentra os estilos para manter o visual desta tela ou componente organizado.
 const styles = StyleSheet.create({
     screen: {
         flex: 1,

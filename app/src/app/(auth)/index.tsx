@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Apresenta uma tela ou layout; o Expo Router usa a pasta para organizar as rotas.
+// Onde ele é usado: src/app/(auth)/index.tsx é importado pelas telas ou componentes correspondentes.
+
 import { useState } from "react";
 import {
   Pressable,
@@ -17,14 +20,19 @@ import { COLORS } from "../../constants/cores";
 
 const LOGO = require("../../../assets/images/elo-logo-branca.png");
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function Login() {
   const { signIn } = useAuth();
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
   const [username, setUsername] = useState("");
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
   const [password, setPassword] = useState("");
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
   const [error, setError] = useState("");
   const { width } = useWindowDimensions();
   const isMobile = width < 700;
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
   async function handleLogin() {
     setError("");
 
@@ -192,6 +200,7 @@ export default function Login() {
   );
 }
 
+// Este bloco concentra os estilos para manter o visual desta tela ou componente organizado.
 const styles = StyleSheet.create({
   background: {
     flex: 1,

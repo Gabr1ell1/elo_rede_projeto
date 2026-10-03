@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Fornece dados de demonstração para os modos mock.
+// Onde ele é usado: src/data/mockAuth.ts é importado pelas telas ou componentes correspondentes.
+
 // Estes dados simulam usuários para testar login e cadastro sem o backend.
 import { AuthRequest, RegisterRequest, SessionUser } from "../types/auth";
 
@@ -18,10 +21,12 @@ const FAKE_USERS: Record<string, FakeUserRecord> = {
     }
 };
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 function delay<T>(value: T, ms = 500): Promise<T> {
     return new Promise((resolve) => setTimeout(() => resolve(value), ms));
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockLogin(data: AuthRequest): Promise<SessionUser> {
     const record = FAKE_USERS[data.username];
 
@@ -37,6 +42,7 @@ export async function mockLogin(data: AuthRequest): Promise<SessionUser> {
     return delay(record.user);
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockRegister(data: RegisterRequest): Promise<void> {
     const userId = `mock-${Object.keys(FAKE_USERS).length + 1}`;
 

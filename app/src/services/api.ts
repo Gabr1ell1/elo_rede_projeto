@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Agrupa chamadas à API ou operações de arquivos usadas pelas telas.
+// Onde ele é usado: src/services/api.ts é importado pelas telas ou componentes correspondentes.
+
 import { createApi } from '../integration/httpClient';
 import { AuthRequest, RegisterRequest, SessionUser } from '../types/auth';
 import { Appointment, Attachment, AttachmentCategory, Psychologist } from '../types/clinic';
@@ -89,6 +92,7 @@ export const getPsychologistById = async (
     return dadosPublicos;
 };
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function updatePsychologistProfile(id: string, changes: Pick<Psychologist, 'specialty' | 'price' | 'bio' | 'yearsOfExperience' | 'approach' | 'whatsapp' | 'email' | 'visibleInNetwork'>) {
     // A validação também protege a API se outra tela chamar esta função depois.
     if (changes.yearsOfExperience !== undefined && (!Number.isFinite(changes.yearsOfExperience) || changes.yearsOfExperience < 0)) {
@@ -146,24 +150,28 @@ export const updateAppointmentStatus = async (
     return response.data;
 };
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function getAppointmentById(id: string, userId: string, role: 'PATIENT' | 'PSYCHOLOGIST') {
     if (USE_MOCK_CLINIC) return mockGetAppointmentById(id, userId, role);
     const response = await clinicApi.get(`/appointments/${id}`);
     return response.data as Appointment;
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function cancelAppointment(id: string, userId: string) {
     if (USE_MOCK_CLINIC) return mockCancelAppointment(id, userId);
     const response = await clinicApi.post(`/appointments/${id}/cancel`);
     return response.data as Appointment;
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function listAttachments(appointmentId: string, userId: string, role: 'PATIENT' | 'PSYCHOLOGIST') {
     if (USE_MOCK_CLINIC) return mockListAttachments(appointmentId, userId, role);
     const response = await clinicApi.get(`/appointments/${appointmentId}/attachments`);
     return response.data as Attachment[];
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function uploadAttachment(appointmentId: string, file: { uri: string; name: string; mimeType: string; size: number; blob?: Blob }, category: AttachmentCategory, userId: string) {
     if (file.size > 10 * 1024 * 1024) throw new Error('O arquivo deve ter no máximo 10 MB.');
     if (!/^(image\/(jpeg|png|webp|heic)|application\/pdf)$/i.test(file.mimeType)) throw new Error('Use um arquivo JPG, PNG, WEBP, HEIC ou PDF.');
@@ -177,11 +185,13 @@ export async function uploadAttachment(appointmentId: string, file: { uri: strin
     return response.data as Attachment;
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function deleteAttachment(id: string, userId: string) {
     if (USE_MOCK_CLINIC) return mockDeleteAttachment(id, userId);
     await clinicApi.delete(`/attachments/${id}`);
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function uploadAvatar(userId: string, file: { uri: string; name: string; mimeType: string; blob?: Blob }) {
     if (USE_MOCK_CLINIC) return mockUploadAvatar(userId, file.uri);
     const data = new FormData();
@@ -191,6 +201,7 @@ export async function uploadAvatar(userId: string, file: { uri: string; name: st
     return response.data.url as string;
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function getAvatar(userId: string) {
     if (USE_MOCK_CLINIC) return mockGetAvatar(userId);
     const response = await authApi.get(`/avatar/${userId}`);

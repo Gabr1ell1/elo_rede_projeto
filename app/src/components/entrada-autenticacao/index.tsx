@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Cria um componente visual que as telas podem reutilizar.
+// Onde ele é usado: src/components/entrada-autenticacao/index.tsx é importado pelas telas ou componentes correspondentes.
+
 // Este campo reúne rótulo e caixa de texto para os formulários de acesso.
 import {
   View,
@@ -14,6 +17,7 @@ type AuthInputProps = {
   secureTextEntry?: boolean;
 };
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export function AuthInput({
   label,
   placeholder,
@@ -39,6 +43,7 @@ export function AuthInput({
   );
 }
 
+// Este bloco concentra os estilos para manter o visual desta tela ou componente organizado.
 const styles = StyleSheet.create({
   container: {
     marginBottom: 20,

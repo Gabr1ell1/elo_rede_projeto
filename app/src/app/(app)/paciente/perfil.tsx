@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Apresenta uma tela ou layout; o Expo Router usa a pasta para organizar as rotas.
+// Onde ele é usado: src/app/(app)/paciente/perfil.tsx é importado pelas telas ou componentes correspondentes.
+
 // Esta página mostra as informações e a foto de perfil do paciente.
 import {
     View,
@@ -16,6 +19,7 @@ import { COLORS } from "../../../constants/cores";
 
 const LOGO = require("../../../../assets/images/elo-logo-branca.png");
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function PatientProfile() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
@@ -157,6 +161,7 @@ export default function PatientProfile() {
     );
 }
 
+// Este bloco concentra os estilos para manter o visual desta tela ou componente organizado.
 const styles = StyleSheet.create({
     screen: {
         flex: 1,

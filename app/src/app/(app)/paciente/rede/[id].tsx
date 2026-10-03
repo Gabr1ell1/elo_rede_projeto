@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Apresenta uma tela ou layout; o Expo Router usa a pasta para organizar as rotas.
+// Onde ele é usado: src/app/(app)/paciente/rede/[id].tsx é importado pelas telas ou componentes correspondentes.
+
 // Esta página mostra o perfil do profissional e os horários para agendamento.
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -35,17 +38,22 @@ const formatDay = (iso: string) => {
 const formatTime = (iso: string) =>
     new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function PsychologistProfile() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { id } = useLocalSearchParams<{ id: string }>();
     const { user, signOut } = useAuth();
     const [psychologist, setPsychologist] = useState<Psychologist | null>(null);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [loading, setLoading] = useState(true);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [requesting, setRequesting] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [error, setError] = useState("");
 
+// Este efeito sincroniza a tela com dados, autenticacao ou ciclo de vida do componente.
     useEffect(() => {
         if (!id) return;
         getPsychologistById(id)
@@ -66,6 +74,7 @@ export default function PsychologistProfile() {
         return Array.from(map.entries());
     }, [psychologist]);
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
     async function handleRequest() {
         const slot = selectedSlot;
         if (!psychologist || !user || !slot) return;
@@ -267,6 +276,7 @@ export default function PsychologistProfile() {
     );
 }
 
+// Este bloco concentra os estilos para manter o visual desta tela ou componente organizado.
 const styles = StyleSheet.create({
     screen: {
         flex: 1,

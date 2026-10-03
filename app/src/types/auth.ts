@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Define os formatos de dados compartilhados pelo app.
+// Onde ele é usado: src/types/auth.ts é importado pelas telas ou componentes correspondentes.
+
 export type Role = "PATIENT" | "PSYCHOLOGIST";
 
 export type AuthRequest = {

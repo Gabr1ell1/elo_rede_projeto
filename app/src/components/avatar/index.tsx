@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Cria um componente visual que as telas podem reutilizar.
+// Onde ele é usado: src/components/avatar/index.tsx é importado pelas telas ou componentes correspondentes.
+
 // Este componente mostra a foto e oferece opções para trocá-la.
 import { useEffect, useState } from 'react';
 import { Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -13,6 +16,7 @@ const OPTIONS: [Source, string, any][] = [
     ['file', 'Arquivo', 'document-outline']
 ];
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export function Avatar({
     userId,
     editable = false,
@@ -23,10 +27,14 @@ export function Avatar({
     size?: number;
 }) {
     const [uri, setUri] = useState<string>();
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [imageFailed, setImageFailed] = useState(false);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [error, setError] = useState('');
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [menu, setMenu] = useState(false);
 
+// Este efeito sincroniza a tela com dados, autenticacao ou ciclo de vida do componente.
     useEffect(() => {
         if (!userId) return;
         setImageFailed(false);
@@ -35,6 +43,7 @@ export function Avatar({
             .catch(() => {});
     }, [userId]);
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
     async function choose(kind: Source) {
         setMenu(false);
         try {
@@ -115,6 +124,7 @@ export function Avatar({
     );
 }
 
+// Este bloco concentra os estilos para manter o visual desta tela ou componente organizado.
 const styles = StyleSheet.create({
     wrap: { alignItems: 'center', gap: 8 },
     placeholder: { backgroundColor: '#DDEDEA', alignItems: 'center', justifyContent: 'center' },

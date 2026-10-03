@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Cria um componente visual que as telas podem reutilizar.
+// Onde ele é usado: src/components/botao-autenticacao/index.tsx é importado pelas telas ou componentes correspondentes.
+
 // Este botão mantém o mesmo visual nas telas de login e cadastro.
 import {
   Pressable,
@@ -10,6 +13,7 @@ type AuthButtonProps = {
   onPress: () => void;
 };
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export function AuthButton({
   title,
   onPress,
@@ -26,6 +30,7 @@ export function AuthButton({
   );
 }
 
+// Este bloco concentra os estilos para manter o visual desta tela ou componente organizado.
 const styles = StyleSheet.create({
   button: {
     height: 52,

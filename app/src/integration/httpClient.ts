@@ -1,13 +1,18 @@
+// Para que serve este arquivo: Configura a comunicação HTTP compartilhada pelos serviços.
+// Onde ele é usado: src/integration/httpClient.ts é importado pelas telas ou componentes correspondentes.
+
 import axios from 'axios';
 
 type UnauthorizeHandler = () => void;
 
 let unauthorize: UnauthorizeHandler | null = null;
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export function setUnauthorizeHandler(handler: UnauthorizeHandler) {
     unauthorize = handler;
 }
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export function createApi(baseURL: string) {
     const instance = axios.create({
         baseURL,

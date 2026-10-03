@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Apresenta uma tela ou layout; o Expo Router usa a pasta para organizar as rotas.
+// Onde ele é usado: src/app/(app)/paciente/consultas.tsx é importado pelas telas ou componentes correspondentes.
+
 // Esta página mostra as consultas do paciente e permite abrir cada detalhe.
 import { useEffect, useState } from "react";
 import {
@@ -46,14 +49,18 @@ const formatDay = (iso: string) => {
 const formatTime = (iso: string) =>
     new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function PatientAppointments() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { user, signOut } = useAuth();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [loading, setLoading] = useState(true);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [error, setError] = useState("");
 
+// Este efeito sincroniza a tela com dados, autenticacao ou ciclo de vida do componente.
     useEffect(() => {
         if (!user) return;
         getMyAppointmentsAsPatient(user.userId)
@@ -244,6 +251,7 @@ export default function PatientAppointments() {
     );
 }
 
+// Este bloco concentra os estilos para manter o visual desta tela ou componente organizado.
 const styles = StyleSheet.create({
     screen: {
         flex: 1,

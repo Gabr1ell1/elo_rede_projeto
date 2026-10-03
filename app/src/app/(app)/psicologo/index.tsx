@@ -1,3 +1,6 @@
+// Para que serve este arquivo: Apresenta uma tela ou layout; o Expo Router usa a pasta para organizar as rotas.
+// Onde ele é usado: src/app/(app)/psicologo/index.tsx é importado pelas telas ou componentes correspondentes.
+
 // Esta é a agenda do psicólogo, com ações para confirmar ou recusar consultas.
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -47,12 +50,15 @@ const formatDay = (iso: string) => {
 const formatTime = (iso: string) =>
     new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function PsychologistAgenda() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { user, signOut } = useAuth();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [loading, setLoading] = useState(true);
+// Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [error, setError] = useState("");
 
     const username = (user?.username ?? "").trim();
@@ -70,10 +76,12 @@ export default function PsychologistAgenda() {
             .finally(() => setLoading(false));
     }, [user]);
 
+// Este efeito sincroniza a tela com dados, autenticacao ou ciclo de vida do componente.
     useEffect(() => {
         load();
     }, [load]);
 
+// Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
     async function handleUpdateStatus(id: string, status: Appointment["status"]) {
         try {
             setError("");
@@ -288,6 +296,7 @@ export default function PsychologistAgenda() {
     );
 }
 
+// Este bloco concentra os estilos para manter o visual desta tela ou componente organizado.
 const styles = StyleSheet.create({
     screen: {
         flex: 1,
