@@ -6,22 +6,20 @@ import { AuthRequest, RegisterRequest, SessionUser } from "../types/auth";
 // O cadastro mock também prepara o perfil clínico dos novos psicólogos.
 import { mockGarantirPerfilPsicologo } from "./mockClinic";
 
-type FakeUserRecord = {
-    password: string;
-    user: SessionUser;
-};
+// Os usuarios iniciais ficam em arquivo e as novas contas sao salvas no aparelho.
+import { carregarDados, salvarDados } from "./armazenamento";
+import { MOCK_USUARIOS, UsuarioMock } from "./mockUsuarios";
 
-// Dois usuários de teste prontos, um de cada papel.
-const FAKE_USERS: Record<string, FakeUserRecord> = {
-    paciente1: {
-        password: "123456",
-        user: { userId: "p1", username: "paciente1", role: "PATIENT" }
-    },
-    psi1: {
-        password: "123456",
-        user: { userId: "psi1", username: "psi1", role: "PSYCHOLOGIST" }
+let FAKE_USERS: Record<string, UsuarioMock> = JSON.parse(JSON.stringify(MOCK_USUARIOS)) as Record<string, UsuarioMock>;
+let usuariosCarregados: Promise<void> | null = null;
+
+// Le as contas salvas ou cria a lista inicial na primeira operacao.
+async function garantirUsuariosCarregados(): Promise<void> {
+    if (!usuariosCarregados) {
+        usuariosCarregados = carregarDados("@Elo:usuarios", MOCK_USUARIOS).then((usuarios) => { FAKE_USERS = usuarios; });
     }
-};
+    await usuariosCarregados;
+}
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 function delay<T>(value: T, ms = 500): Promise<T> {
@@ -30,6 +28,7 @@ function delay<T>(value: T, ms = 500): Promise<T> {
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockLogin(data: AuthRequest): Promise<SessionUser> {
+    await garantirUsuariosCarregados();
     const record = FAKE_USERS[data.username];
 
     if (!record || record.password !== data.password) {
@@ -46,6 +45,7 @@ export async function mockLogin(data: AuthRequest): Promise<SessionUser> {
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockRegister(data: RegisterRequest): Promise<void> {
+    await garantirUsuariosCarregados();
     const userId = `mock-${Object.keys(FAKE_USERS).length + 1}`;
 
     FAKE_USERS[data.username] = {
@@ -53,8 +53,16 @@ export async function mockRegister(data: RegisterRequest): Promise<void> {
         user: { userId, username: data.username, role: data.role }
     };
 
+    await salvarDados("@Elo:usuarios", FAKE_USERS);
+
     // Usa o mesmo userId no cadastro e no perfil profissional.
     if (data.role === "PSYCHOLOGIST") await mockGarantirPerfilPsicologo(userId);
 
     await delay(undefined);
+}
+
+// Restaura as contas de exemplo depois de o armazenamento remover os dados salvos.
+export function mockRestaurarUsuarios(): void {
+    FAKE_USERS = JSON.parse(JSON.stringify(MOCK_USUARIOS)) as Record<string, UsuarioMock>;
+    usuariosCarregados = Promise.resolve();
 }

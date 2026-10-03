@@ -4,10 +4,13 @@
 import { createApi } from '../integration/httpClient';
 import { AuthRequest, RegisterRequest, SessionUser } from '../types/auth';
 import { Appointment, Attachment, AttachmentCategory, Psychologist } from '../types/clinic';
-import { mockLogin, mockRegister } from '../data/mockAuth';
+import { mockLogin, mockRegister, mockRestaurarUsuarios } from '../data/mockAuth';
+import { limparArmazenamento } from '../data/armazenamento';
 // O serviço centraliza as mesmas regras de validação usadas em outras partes do app.
 import { validarEmail } from '../validacoes/email';
 import { validarNumeroPositivo } from '../validacoes/numero';
+// A confirmação usa o gerador comum de links demonstrativos.
+import { gerarLinkConsulta } from '../links/consulta';
 import {
     mockGetPsychologists,
     mockGetPsychologistById,
@@ -24,7 +27,8 @@ import {
     mockGetAvatar,
     mockUpdatePsychologistProfile,
     mockBuscarRedeDePsicologos,
-    mockEnviarCrp
+    mockEnviarCrp,
+    mockRestaurarClinica
 } from '../data/mockClinic';
 
 // USE_MOCK: liga o mock de TUDO (login + clínica), sem backend.
@@ -157,8 +161,9 @@ export const updateAppointmentStatus = async (
     psychologistId: string
 ): Promise<Appointment> => {
     if (USE_MOCK_CLINIC) return mockUpdateAppointmentStatus(appointmentId, status, psychologistId);
-    const response = await clinicApi.put(`/appointments/${appointmentId}`, { status });
-    return response.data;
+    const linkConsulta = status === 'CONFIRMED' ? gerarLinkConsulta() : undefined;
+    const response = await clinicApi.put(`/appointments/${appointmentId}`, { status, linkConsulta });
+    return { ...response.data, ...(linkConsulta ? { linkConsulta } : {}) } as Appointment;
 };
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
@@ -217,4 +222,11 @@ export async function getAvatar(userId: string) {
     if (USE_MOCK_CLINIC) return mockGetAvatar(userId);
     const response = await authApi.get(`/avatar/${userId}`);
     return response.data.url as string | undefined;
+}
+
+// Apaga os dados locais e restaura usuários, perfis e consultas iniciais. Exemplo: botão no menu.
+export async function restaurarDadosDeExemplo(): Promise<void> {
+    await limparArmazenamento();
+    mockRestaurarClinica();
+    mockRestaurarUsuarios();
 }

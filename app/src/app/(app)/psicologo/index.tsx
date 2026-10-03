@@ -61,7 +61,8 @@ export default function PsychologistAgenda() {
         if (!user) return;
         setLoading(true);
         getMyAppointmentsAsPsychologist(user.userId)
-            .then(setAppointments)
+            // A agenda mantém somente consultas já respondidas; os pedidos ficam em Solicitações.
+            .then((consultas) => setAppointments(consultas.filter((consulta) => consulta.status !== "PENDING")))
             .catch((erro) => mostrarErro("Erro ao carregar agenda", motivoDoErro(erro)))
             .finally(() => setLoading(false));
     }, [user]);

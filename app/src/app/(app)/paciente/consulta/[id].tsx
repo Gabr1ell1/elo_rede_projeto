@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../../../context/AuthContext";
 import {
@@ -168,6 +169,26 @@ export default function AppointmentDetail() {
         }
     }
 
+    // Abre o link FALSO de demonstração da consulta já confirmada.
+    async function abrirLinkConsulta() {
+        if (!appointment?.linkConsulta) return;
+        try {
+            await Linking.openURL(appointment.linkConsulta);
+        } catch (erro) {
+            mostrarErro("Erro ao abrir consulta", motivoDoErro(erro));
+        }
+    }
+
+    // Copia para a área de transferência o link FALSO salvo no agendamento.
+    async function copiarLinkConsulta() {
+        if (!appointment?.linkConsulta) return;
+        try {
+            await Clipboard.setStringAsync(appointment.linkConsulta);
+        } catch (erro) {
+            mostrarErro("Erro ao copiar link", motivoDoErro(erro));
+        }
+    }
+
     const hero = (
         <View style={[styles.hero, { paddingTop: insets.top + 16 }]}>
             <View style={styles.decorCircle} />
@@ -286,6 +307,21 @@ export default function AppointmentDetail() {
                                 {STATUS_LABEL[appointment.status]}
                             </Text>
                         </View>
+
+                        {appointment.status === "CONFIRMED" && !!appointment.linkConsulta && (
+                            <View style={styles.acoesConsulta}>
+                                <Text style={styles.avisoLink}>Link FALSO para demonstração</Text>
+                                <Text style={styles.linkConsulta}>{appointment.linkConsulta}</Text>
+                                <Pressable onPress={() => void abrirLinkConsulta()} style={({ pressed }) => [styles.joinButton, pressed && styles.pressed]}>
+                                    <Ionicons name="videocam-outline" size={18} color="#FFFFFF" />
+                                    <Text style={styles.joinButtonText}>Entrar na consulta</Text>
+                                </Pressable>
+                                <Pressable onPress={() => void copiarLinkConsulta()} style={({ pressed }) => [styles.copyButton, pressed && styles.pressed]}>
+                                    <Ionicons name="copy-outline" size={17} color={COLORS.primaryDark} />
+                                    <Text style={styles.copyButtonText}>Copiar link</Text>
+                                </Pressable>
+                            </View>
+                        )}
 
                         {appointment.status !== "CANCELLED" && (
                             <Pressable
@@ -629,6 +665,14 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: "700"
     },
+    // Estes estilos separam as ações de chamada e cópia do restante dos dados da consulta.
+    acoesConsulta: { gap: 9, marginTop: 14, padding: 14, borderRadius: 16, backgroundColor: COLORS.background },
+    avisoLink: { color: COLORS.textSecondary, fontSize: 12, fontWeight: "700" },
+    linkConsulta: { color: COLORS.primaryDark, fontSize: 12, marginBottom: 4 },
+    joinButton: { minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 999, backgroundColor: COLORS.primary },
+    joinButtonText: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
+    copyButton: { minHeight: 42, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 999, backgroundColor: COLORS.primaryLight },
+    copyButtonText: { color: COLORS.primaryDark, fontSize: 14, fontWeight: "700" },
     danger: {
         alignSelf: "flex-start",
         flexDirection: "row",

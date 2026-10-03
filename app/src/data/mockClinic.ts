@@ -2,95 +2,57 @@
 // Onde ele é usado: src/data/mockClinic.ts é importado pelas telas ou componentes correspondentes.
 
 // Estes dados simulam profissionais, consultas e anexos da clínica.
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Appointment, Attachment, Psychologist } from "../types/clinic";
+import { carregarDados, salvarDados } from "./armazenamento";
+import { MOCK_PSICOLOGOS } from "./mockPsicologos";
+import { MOCK_CONSULTAS } from "./mockConsultas";
+import { MOCK_ANEXOS } from "./mockAnexos";
+import { MOCK_FOTOS } from "./mockFotos";
+import { gerarLinkConsulta } from "../links/consulta";
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 function delay<T>(value: T, ms = 400): Promise<T> {
     return new Promise((resolve) => setTimeout(() => resolve(value), ms));
 }
 
-const PSYCHOLOGISTS: Psychologist[] = [
-    {
-        id: "psi1",
-        userId: "psi1",
-        name: "Dra. Ana Souza",
-        specialty: "Ansiedade e Estresse",
-        price: 150,
-        bio: "Psicóloga clínica com foco em TCC, atendimento adulto.",
-        yearsOfExperience: 8,
-        approach: "Terapia Cognitivo-Comportamental",
-        whatsapp: "11987654321",
-        email: "ana.souza@elo.exemplo",
-        visibleInNetwork: true,
-        statusCrp: "VERIFICADO",
-        availableSlots: [
-            "2026-10-02T14:00:00",
-            "2026-10-02T15:00:00",
-            "2026-10-03T09:00:00"
-        ]
-    },
-    {
-        id: "psi2",
-        userId: "psi2",
-        name: "Dr. Marcos Lima",
-        specialty: "Terapia de Casal",
-        price: 180,
-        bio: "Atendimento a casais e famílias há 10 anos.",
-        yearsOfExperience: 10,
-        approach: "Terapia Sistêmica",
-        whatsapp: "11976543210",
-        email: "marcos.lima@elo.exemplo",
-        visibleInNetwork: true,
-        statusCrp: "SEM_ENVIO",
-        availableSlots: ["2026-10-02T10:00:00", "2026-10-05T16:00:00"]
-    },
-    {
-        id: "psi3",
-        userId: "psi3",
-        name: "Dra. Camila Rocha",
-        specialty: "Psicologia Infantil",
-        price: 140,
-        bio: "Especialista em desenvolvimento infantil e adolescência.",
-        yearsOfExperience: 6,
-        approach: "Psicologia Histórico-Cultural",
-        whatsapp: "11965432109",
-        email: "camila.rocha@elo.exemplo",
-        visibleInNetwork: false,
-        statusCrp: "VERIFICADO",
-        availableSlots: ["2026-10-03T11:00:00"]
-    }
-];
+let PSYCHOLOGISTS: Psychologist[] = JSON.parse(JSON.stringify(MOCK_PSICOLOGOS)) as Psychologist[];
+let APPOINTMENTS: Appointment[] = JSON.parse(JSON.stringify(MOCK_CONSULTAS)) as Appointment[];
+let ATTACHMENTS: Attachment[] = JSON.parse(JSON.stringify(MOCK_ANEXOS)) as Attachment[];
+let AVATARS: Record<string, string> = JSON.parse(JSON.stringify(MOCK_FOTOS)) as Record<string, string>;
+let dadosCarregados: Promise<void> | null = null;
 
-// Estado em memória - reseta quando a página recarrega. É só pra
-// simular o comportamento da API real enquanto o backend não existe.
-let APPOINTMENTS: Appointment[] = [
-    {
-        id: "a1",
-        patientId: "p1",
-        patientName: "paciente1",
-        psychologistId: "psi1",
-        psychologistName: "Dra. Ana Souza",
-        date: "2026-10-02T14:00:00",
-        status: "PENDING"
+// Carrega exemplos ou dados salvos uma vez nesta execucao do aplicativo.
+async function garantirDadosCarregados(): Promise<void> {
+    if (!dadosCarregados) {
+        dadosCarregados = (async () => {
+            const psicologosSalvos = await carregarDados("@Elo:psicologos", MOCK_PSICOLOGOS);
+            PSYCHOLOGISTS = psicologosSalvos.map((psicologo) => ({ ...psicologo, statusCrp: psicologo.statusCrp ?? "SEM_ENVIO" }));
+            APPOINTMENTS = await carregarDados("@Elo:consultas", MOCK_CONSULTAS);
+            ATTACHMENTS = await carregarDados("@Elo:anexos", MOCK_ANEXOS);
+            AVATARS = await carregarDados("@Elo:fotos", MOCK_FOTOS);
+            // Migra dados antigos: garante estado CRP e link em consultas já confirmadas.
+            APPOINTMENTS = APPOINTMENTS.map((consulta) => consulta.status === "CONFIRMED" && !consulta.linkConsulta
+                ? { ...consulta, linkConsulta: gerarLinkConsulta() }
+                : consulta);
+            await salvarDadosClinicos();
+        })();
     }
-];
-let ATTACHMENTS: Attachment[] = [];
-const AVATARS: Record<string, string> = {};
-let attachmentsLoaded: Promise<void> | null = null;
+    await dadosCarregados;
+}
 
-// AsyncStorage conserva os dados mockados entre aberturas do aplicativo.
-async function loadAttachments() {
-    if (!attachmentsLoaded) {
-        attachmentsLoaded = AsyncStorage.getItem('@Clinic:attachments').then((raw) => {
-            if (raw) ATTACHMENTS = JSON.parse(raw) as Attachment[];
-        });
-    }
-    await attachmentsLoaded;
+// Grava os quatro conjuntos da clinica sempre que uma acao altera dados locais.
+async function salvarDadosClinicos(): Promise<void> {
+    await Promise.all([
+        salvarDados("@Elo:psicologos", PSYCHOLOGISTS),
+        salvarDados("@Elo:consultas", APPOINTMENTS),
+        salvarDados("@Elo:anexos", ATTACHMENTS),
+        salvarDados("@Elo:fotos", AVATARS)
+    ]);
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockGetPsychologists(): Promise<Psychologist[]> {
+    await garantirDadosCarregados();
     // A lista geral não entrega telefones nem e-mails pessoais.
     return delay(PSYCHOLOGISTS.map(({ email, whatsapp, ...psicologo }) => psicologo));
 }
@@ -100,6 +62,7 @@ export async function mockGetPsychologistById(
     id: string,
     requesterUserId?: string
 ): Promise<Psychologist | undefined> {
+    await garantirDadosCarregados();
     // Uma consulta feita pelo próprio psicólogo prepara seu perfil vazio se necessário.
     const psicologo = requesterUserId === id
         ? await mockGarantirPerfilPsicologo(id)
@@ -113,6 +76,7 @@ export async function mockGetPsychologistById(
 
 // A rede só mostra profissionais que escolheram aparecer e não inclui o usuário atual.
 export async function mockBuscarRedeDePsicologos(idUsuarioAtual: string): Promise<Psychologist[]> {
+    await garantirDadosCarregados();
     return delay(PSYCHOLOGISTS
         .filter((psicologo) => psicologo.visibleInNetwork === true && psicologo.userId !== idUsuarioAtual)
         .map((psicologo) => ({ ...psicologo })));
@@ -123,15 +87,18 @@ export async function mockUpdatePsychologistProfile(id: string, changes: Pick<Ps
     // A atualização usa o perfil existente ou cria a base com o mesmo userId.
     const item = await mockGarantirPerfilPsicologo(id);
     Object.assign(item, changes);
+    await salvarDadosClinicos();
     return delay(item);
 }
 
 // Recebe o identificador do usuário e devolve um perfil existente ou vazio. Exemplo: "psi-novo".
 export async function mockGarantirPerfilPsicologo(userId: string): Promise<Psychologist> {
+    await garantirDadosCarregados();
     let item = PSYCHOLOGISTS.find((entrada) => entrada.userId === userId || entrada.id === userId);
     if (!item) {
         item = { id: userId, userId, name: userId, specialty: "", price: 0, bio: "", availableSlots: [], statusCrp: "SEM_ENVIO" };
         PSYCHOLOGISTS.push(item);
+        await salvarDadosClinicos();
     }
     return delay(item);
 }
@@ -141,9 +108,13 @@ export async function mockEnviarCrp(userId: string, crp: string): Promise<Psycho
     const perfil = await mockGarantirPerfilPsicologo(userId);
     perfil.crp = crp;
     perfil.statusCrp = "AGUARDANDO";
+    await salvarDadosClinicos();
     setTimeout(() => {
         const atual = PSYCHOLOGISTS.find((entrada) => entrada.userId === userId);
-        if (atual?.statusCrp === "AGUARDANDO" && atual.crp === crp) atual.statusCrp = "VERIFICADO";
+        if (atual?.statusCrp === "AGUARDANDO" && atual.crp === crp) {
+            atual.statusCrp = "VERIFICADO";
+            void salvarDadosClinicos();
+        }
     }, 5000); // Cinco segundos aceleram a demonstração; esta verificação não consulta um CRP real.
     return delay(perfil);
 }
@@ -155,6 +126,7 @@ export async function mockRequestAppointment(
     psychologist: Psychologist,
     date: string
 ): Promise<Appointment> {
+    await garantirDadosCarregados();
     const currentPsychologist = PSYCHOLOGISTS.find((item) => item.id === psychologist.id);
     if (!currentPsychologist?.availableSlots.includes(date)) throw new Error("Este horário não está mais disponível.");
     currentPsychologist.availableSlots = currentPsychologist.availableSlots.filter((slot) => slot !== date);
@@ -169,11 +141,13 @@ export async function mockRequestAppointment(
     };
 
     APPOINTMENTS = [...APPOINTMENTS, appointment];
+    await salvarDadosClinicos();
     return delay(appointment);
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockGetAppointmentById(id: string, userId: string, role: "PATIENT" | "PSYCHOLOGIST") {
+    await garantirDadosCarregados();
     const item = APPOINTMENTS.find((appointment) => appointment.id === id);
     if (!item) throw new Error("Consulta não encontrada.");
     if ((role === "PATIENT" && item.patientId !== userId) || (role === "PSYCHOLOGIST" && item.psychologistId !== userId)) throw new Error("403: Acesso negado.");
@@ -182,49 +156,52 @@ export async function mockGetAppointmentById(id: string, userId: string, role: "
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockCancelAppointment(id: string, userId: string) {
+    await garantirDadosCarregados();
     const item = APPOINTMENTS.find((appointment) => appointment.id === id);
     if (!item || item.patientId !== userId) throw new Error("403: Acesso negado.");
     if (item.status !== "PENDING" && item.status !== "CONFIRMED") throw new Error("Esta consulta não pode ser cancelada.");
     item.status = "CANCELLED";
     const psychologist = PSYCHOLOGISTS.find((entry) => entry.id === item.psychologistId);
     if (psychologist && !psychologist.availableSlots.includes(item.date)) psychologist.availableSlots.push(item.date);
+    await salvarDadosClinicos();
     return delay(item);
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockListAttachments(appointmentId: string, userId: string, role: "PATIENT" | "PSYCHOLOGIST") {
-    await loadAttachments();
+    await garantirDadosCarregados();
     await mockGetAppointmentById(appointmentId, userId, role);
     return delay(ATTACHMENTS.filter((item) => item.appointmentId === appointmentId));
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockUploadAttachment(item: Attachment, userId: string) {
-    await loadAttachments();
+    await garantirDadosCarregados();
     await mockGetAppointmentById(item.appointmentId, userId, "PATIENT");
     ATTACHMENTS = [...ATTACHMENTS, item];
-    await AsyncStorage.setItem("@Clinic:attachments", JSON.stringify(ATTACHMENTS));
+    await salvarDadosClinicos();
     return delay(item);
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockDeleteAttachment(id: string, userId: string) {
-    await loadAttachments();
+    await garantirDadosCarregados();
     const item = ATTACHMENTS.find((entry) => entry.id === id);
     if (!item || item.uploadedBy !== userId) throw new Error("403: Acesso negado.");
     ATTACHMENTS = ATTACHMENTS.filter((entry) => entry.id !== id);
-    await AsyncStorage.setItem("@Clinic:attachments", JSON.stringify(ATTACHMENTS));
+    await salvarDadosClinicos();
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
-export async function mockUploadAvatar(userId: string, uri: string) { AVATARS[userId] = uri; return uri; }
+export async function mockUploadAvatar(userId: string, uri: string) { await garantirDadosCarregados(); AVATARS[userId] = uri; await salvarDadosClinicos(); return uri; }
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
-export async function mockGetAvatar(userId: string) { return AVATARS[userId]; }
+export async function mockGetAvatar(userId: string) { await garantirDadosCarregados(); return AVATARS[userId]; }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export async function mockGetAppointmentsByPatient(
     patientId: string
 ): Promise<Appointment[]> {
+    await garantirDadosCarregados();
     return delay(APPOINTMENTS.filter((a) => a.patientId === patientId));
 }
 
@@ -232,6 +209,7 @@ export async function mockGetAppointmentsByPatient(
 export async function mockGetAppointmentsByPsychologist(
     psychologistId: string
 ): Promise<Appointment[]> {
+    await garantirDadosCarregados();
     return delay(APPOINTMENTS.filter((a) => a.psychologistId === psychologistId));
 }
 
@@ -241,16 +219,27 @@ export async function mockUpdateAppointmentStatus(
     status: Appointment["status"],
     psychologistId: string
 ): Promise<Appointment> {
+    await garantirDadosCarregados();
     const existing = APPOINTMENTS.find((appointment) => appointment.id === appointmentId);
     if (!existing || existing.psychologistId !== psychologistId) throw new Error("403: Acesso negado.");
-    APPOINTMENTS = APPOINTMENTS.map((a) =>
-        a.id === appointmentId ? { ...a, status } : a
-    );
+    APPOINTMENTS = APPOINTMENTS.map((a) => a.id === appointmentId
+        ? { ...a, status, ...(status === "CONFIRMED" ? { linkConsulta: gerarLinkConsulta() } : {}) }
+        : a);
 
     const updated = APPOINTMENTS.find((a) => a.id === appointmentId);
     if (!updated) {
         throw new Error("Consulta não encontrada");
     }
 
+    await salvarDadosClinicos();
     return delay(updated);
+}
+
+// Restaura os exemplos na memória após armazenamento.ts apagar as chaves salvas.
+export function mockRestaurarClinica(): void {
+    PSYCHOLOGISTS = JSON.parse(JSON.stringify(MOCK_PSICOLOGOS)) as Psychologist[];
+    APPOINTMENTS = JSON.parse(JSON.stringify(MOCK_CONSULTAS)) as Appointment[];
+    ATTACHMENTS = JSON.parse(JSON.stringify(MOCK_ANEXOS)) as Attachment[];
+    AVATARS = JSON.parse(JSON.stringify(MOCK_FOTOS)) as Record<string, string>;
+    dadosCarregados = Promise.resolve();
 }
