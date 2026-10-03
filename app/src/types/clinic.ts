@@ -1,0 +1,41 @@
+export type Psychologist = {
+    id: string;
+    userId: string;
+    name: string;
+    specialty: string;
+    price: number;
+    bio: string;
+    availableSlots: string[]; // ex: ["2026-09-10T14:00:00", ...]
+    // Dados opcionais usados nos cartões e na rede profissional.
+    yearsOfExperience?: number;
+    approach?: string;
+    whatsapp?: string;
+    email?: string;
+    visibleInNetwork?: boolean;
+};
+
+export type AppointmentStatus = "PENDING" | "CONFIRMED" | "CANCELLED";
+
+export type AttachmentCategory = "EXAM" | "CERTIFICATE" | "REPORT" | "OTHER";
+
+export type Attachment = {
+    id: string;
+    appointmentId: string;
+    name: string;
+    mimeType: string;
+    size: number;
+    category: AttachmentCategory;
+    uri: string;
+    createdAt: string;
+    uploadedBy: string;
+};
+
+export type Appointment = {
+    id: string;
+    patientId: string;
+    patientName: string;
+    psychologistId: string;
+    psychologistName: string;
+    date: string;
+    status: AppointmentStatus;
+};
