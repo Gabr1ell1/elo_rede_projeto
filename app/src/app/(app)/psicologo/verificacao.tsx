@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MenuSanduiche } from "../../../components/menu-sanduiche";
 import { useAuth } from "../../../context/AuthContext";
 import { useAlerta, motivoDoErro } from "../../../context/AlertaContext";
-import { enviarCrp, getPsychologistById } from "../../../services/api";
+import { concluirVerificacaoCrpMock, enviarCrp, getPsychologistById } from "../../../services/api";
 import { validarCrp } from "../../../validacoes/crp";
 import { Psychologist } from "../../../types/clinic";
 import { COLORS } from "../../../constants/cores";
@@ -27,12 +27,11 @@ const NOMES_STATUS: Record<Psychologist["statusCrp"], string> = {
 export default function VerificacaoCrp() {
     const roteador = useRouter();
     const insets = useSafeAreaInsets();
-    const { user } = useAuth();
+    const { user, statusCrp, atualizarStatusCrp, recarregarStatusCrp } = useAuth();
     const { mostrarErro } = useAlerta();
     // Guarda o CRP digitado pelo psicólogo até o serviço salvar.
     const [crp, setCrp] = useState("");
     // Guarda o selo que a tela mostra: sem envio, aguardando ou verificado.
-    const [statusCrp, setStatusCrp] = useState<Psychologist["statusCrp"]>("SEM_ENVIO");
     // Desativa o botão enquanto o envio está sendo salvo.
     const [enviando, setEnviando] = useState(false);
 
@@ -43,22 +42,30 @@ export default function VerificacaoCrp() {
             const perfil = await getPsychologistById(user.userId, user.userId);
             if (perfil) {
                 setCrp(perfil.crp ?? "");
-                setStatusCrp(perfil.statusCrp);
+                atualizarStatusCrp(perfil.statusCrp);
             }
         } catch (erro) {
             mostrarErro("Erro ao carregar verificação", motivoDoErro(erro));
         }
-    }, [user, mostrarErro]);
+    }, [user, mostrarErro, atualizarStatusCrp]);
 
     // Atualiza o formulário uma vez quando o perfil atual está disponível.
     useEffect(() => { void atualizarStatus(); }, [atualizarStatus]);
 
     // Enquanto aguarda, consulta o perfil a cada segundo para refletir a mudança automática do mock.
     useEffect(() => {
-        if (statusCrp !== "AGUARDANDO") return;
-        const temporizador = setInterval(() => { void atualizarStatus(); }, 1000);
-        return () => clearInterval(temporizador);
-    }, [statusCrp, atualizarStatus]);
+        if (statusCrp !== "AGUARDANDO" || !user) return;
+        let ativo = true;
+        const temporizador = setTimeout(async () => {
+            try {
+                await concluirVerificacaoCrpMock(user.userId);
+                if (ativo) await recarregarStatusCrp();
+            } catch (erro) {
+                if (ativo) mostrarErro("Erro ao verificar CRP", motivoDoErro(erro));
+            }
+        }, 5000);
+        return () => { ativo = false; clearTimeout(temporizador); };
+    }, [statusCrp, user, recarregarStatusCrp, mostrarErro]);
 
     // Valida o padrão informado e grava o estado AGUARDANDO. Exemplo: enviar "06/12345".
     async function enviarParaVerificacao() {
@@ -70,7 +77,7 @@ export default function VerificacaoCrp() {
         setEnviando(true);
         try {
             const perfil = await enviarCrp(user.userId, crp.trim());
-            setStatusCrp(perfil.statusCrp);
+            atualizarStatusCrp(perfil.statusCrp);
         } catch (erro) {
             mostrarErro("Erro ao enviar CRP", motivoDoErro(erro));
         } finally {
@@ -78,8 +85,9 @@ export default function VerificacaoCrp() {
         }
     }
 
-    const aguarda = statusCrp === "AGUARDANDO";
-    const verificado = statusCrp === "VERIFICADO";
+    const statusAtual = statusCrp ?? "SEM_ENVIO";
+    const aguarda = statusAtual === "AGUARDANDO";
+    const verificado = statusAtual === "VERIFICADO";
     const corStatus = verificado ? COLORS.primaryDark : aguarda ? "#B4232F" : COLORS.textSecondary;
 
     return (
@@ -109,7 +117,7 @@ export default function VerificacaoCrp() {
                         </View>
                         <View style={[estilos.selo, { backgroundColor: verificado ? COLORS.primaryLight : aguarda ? "#FBEAEA" : "#EEF0F0" }]}>
                             {aguarda && <ActivityIndicator size="small" color={corStatus} />}
-                            <Text style={[estilos.textoSelo, { color: corStatus }]}>{NOMES_STATUS[statusCrp]}</Text>
+                            <Text style={[estilos.textoSelo, { color: corStatus }]}>{NOMES_STATUS[statusAtual]}</Text>
                         </View>
                         <Text style={estilos.nota}>Esta conferência é FALSA e serve somente para demonstração.</Text>
                         {!verificado && (
@@ -118,7 +126,7 @@ export default function VerificacaoCrp() {
                                 <Text style={estilos.textoBotao}>{aguarda ? "Aguardando confirmação" : "Enviar para verificação"}</Text>
                             </Pressable>
                         )}
-                        {/* Ao continuar, o layout consulta o estado atualizado e libera a agenda. */}
+                        {/* O guard libera a agenda assim que o status compartilhado muda. */}
                         {verificado && (
                             <Pressable onPress={() => roteador.replace("/psicologo" as any)} style={({ pressed }) => [estilos.botao, pressed && estilos.pressionado]}>
                                 <Text style={estilos.textoBotao}>Continuar para o aplicativo</Text>

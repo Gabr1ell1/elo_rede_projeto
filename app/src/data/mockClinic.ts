@@ -113,14 +113,16 @@ export async function mockEnviarCrp(userId: string, crp: string): Promise<Psycho
     perfil.crp = crp;
     perfil.statusCrp = "AGUARDANDO";
     await salvarDadosClinicos();
-    setTimeout(() => {
-        const atual = PSYCHOLOGISTS.find((entrada) => entrada.userId === userId);
-        if (atual?.statusCrp === "AGUARDANDO" && atual.crp === crp) {
-            atual.statusCrp = "VERIFICADO";
-            void salvarDadosClinicos();
-        }
-    }, 5000); // Cinco segundos aceleram a demonstração; esta verificação não consulta um CRP real.
     return delay(perfil);
+}
+
+export async function mockConcluirVerificacaoCrp(userId: string): Promise<void> {
+    await garantirDadosCarregados();
+    const perfil = PSYCHOLOGISTS.find((entrada) => entrada.userId === userId);
+    if (perfil?.statusCrp === "AGUARDANDO") {
+        perfil.statusCrp = "VERIFICADO";
+        await salvarDadosClinicos();
+    }
 }
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.

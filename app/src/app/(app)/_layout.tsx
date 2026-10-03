@@ -2,13 +2,14 @@
 // Onde ele é usado: src/app/(app)/_layout.tsx é importado pelas telas ou componentes correspondentes.
 
 // Este layout protege as páginas internas e aguarda a restauração da sessão.
-import { Redirect, Slot } from "expo-router";
+import { Redirect, Slot, usePathname } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function ProtectedAppLayout() {
     const { isAuthenticated, isLoading } = useAuth();
+    const pathname = usePathname();
 
     if (isLoading) {
         return (
@@ -20,7 +21,7 @@ export default function ProtectedAppLayout() {
 
     // Quem ainda não entrou volta para a tela de login.
     if (!isAuthenticated) {
-        return <Redirect href="/(auth)" />;
+        return pathname === "/" ? <Slot /> : <Redirect href="/(auth)" />;
     }
 
     return <Slot />;

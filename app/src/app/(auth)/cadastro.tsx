@@ -22,6 +22,7 @@ import { COLORS } from "../../constants/cores";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 // Esta tela mostra falhas de cadastro no alerta compartilhado.
 import { useAlerta } from "../../context/AlertaContext";
+import { mascararCep, validarCep } from "../../validacoes/cep";
 
 const LOGO = require("../../../assets/images/elo-logo-branca.png");
 
@@ -35,6 +36,7 @@ export default function Register() {
   const [email, setEmail] = useState("");
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
   const [password, setPassword] = useState("");
+  const [cep, setCep] = useState("");
   const [role, setRole] = useState<Role>("PATIENT");
 
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
@@ -48,10 +50,15 @@ export default function Register() {
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
   async function handleRegister() {
+    if (!validarCep(cep)) {
+      mostrarErro("CEP inválido", "Digite os oito números do CEP no formato 00000-000.");
+      return;
+    }
     const result = await signUp({
-      username,
+      username: username.trim(),
       email,
       password,
+      cep,
       role,
     });
 
@@ -133,6 +140,16 @@ export default function Register() {
               placeholder="Digite seu e-mail"
               value={email}
               onChangeText={setEmail}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <AuthInput
+              label="CEP"
+              placeholder="00000-000"
+              value={cep}
+              onChangeText={(valor) => setCep(mascararCep(valor))}
+              keyboardType="numeric"
             />
           </View>
 

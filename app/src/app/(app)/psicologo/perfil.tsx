@@ -22,7 +22,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../../context/AuthContext";
 import { getPsychologistById, updatePsychologistProfile } from "../../../services/api";
-import { Psychologist } from "../../../types/clinic";
 import { Avatar } from "../../../components/avatar";
 import { COLORS } from "../../../constants/cores";
 // A tela usa validações comuns e apresenta erros pelo alerta compartilhado.
@@ -36,7 +35,7 @@ const LOGO = require("../../../../assets/images/elo-logo-branca.png");
 export default function PsychologistProfileScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
-    const { user, signOut } = useAuth();
+    const { user, signOut, statusCrp } = useAuth();
     const { mostrarErro } = useAlerta();
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [specialty, setSpecialty] = useState("");
@@ -64,7 +63,6 @@ export default function PsychologistProfileScreen() {
     // Este estado controla se o perfil aparece na rede de psicólogos.
     const [visivelNaRede, setVisivelNaRede] = useState(false);
     // Este estado apresenta no perfil o estado de verificação do CRP.
-    const [statusCrp, setStatusCrp] = useState<Psychologist["statusCrp"]>("SEM_ENVIO");
 
     const username = (user?.username ?? "").trim();
 
@@ -83,7 +81,6 @@ export default function PsychologistProfileScreen() {
                     setWhatsapp(p.whatsapp ?? "");
                     setEmail(p.email ?? "");
                     setVisivelNaRede(p.visibleInNetwork === true);
-                    setStatusCrp(p.statusCrp);
                 }
             })
             .catch((erro) => mostrarErro("Erro ao carregar perfil", motivoDoErro(erro)))

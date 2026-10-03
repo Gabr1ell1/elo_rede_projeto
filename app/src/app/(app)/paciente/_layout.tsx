@@ -2,13 +2,14 @@
 // Onde ele é usado: src/app/(app)/paciente/_layout.tsx é importado pelas telas ou componentes correspondentes.
 
 // Este layout limita a área do paciente ao papel PATIENT.
-import { Redirect, Slot } from "expo-router";
+import { Redirect, Slot, usePathname } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import { useAuth } from "../../../context/AuthContext";
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function PatientLayout() {
     const { isAuthenticated, isLoading, user } = useAuth();
+    const pathname = usePathname();
 
     if (isLoading) {
         return (
@@ -19,12 +20,12 @@ export default function PatientLayout() {
     }
 
     if (!isAuthenticated) {
-        return <Redirect href="/(auth)" />;
+        return pathname === "/" ? <Slot /> : <Redirect href="/(auth)" />;
     }
 
     // Psicólogo tentando acessar rota de paciente -> manda pro dashboard dele
     if (user?.role !== "PATIENT") {
-        return <Redirect href="/psicologo" />;
+        return pathname === "/psicologo" ? <Slot /> : <Redirect href="/psicologo" />;
     }
 
     return <Slot />;

@@ -2,6 +2,22 @@
 // Onde é usado: Os módulos mock de autenticação e clínica usam estas funções para persistir alterações.
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Role } from "../types/auth";
+
+const CHAVE_PERFIS_USUARIO = "@Elo:perfis-usuario";
+
+// Guarda localmente o tipo escolhido no cadastro, pois o serviço de login não possui esse campo.
+export async function salvarPerfilUsuario(username: string, role: Role): Promise<void> {
+    const perfis = await carregarDados<Record<string, Role>>(CHAVE_PERFIS_USUARIO, {});
+    perfis[username.trim().toLowerCase()] = role;
+    await salvarDados(CHAVE_PERFIS_USUARIO, perfis);
+}
+
+// Lê o tipo escolhido para um usuário sem depender de uma rota do serviço de autenticação.
+export async function carregarPerfilUsuario(username: string): Promise<Role | null> {
+    const perfis = await carregarDados<Record<string, Role>>(CHAVE_PERFIS_USUARIO, {});
+    return perfis[username.trim().toLowerCase()] ?? null;
+}
 
 // Recebe uma chave e um exemplo inicial; devolve o valor salvo ou grava e devolve o exemplo. Exemplo: carregarDados("@Elo:consultas", []).
 export async function carregarDados<T>(chave: string, exemplo: T): Promise<T> {

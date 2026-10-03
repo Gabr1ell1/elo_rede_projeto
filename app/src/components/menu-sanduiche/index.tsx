@@ -1,6 +1,6 @@
 // Para que serve este arquivo: mostra as rotas principais em um menu compacto para celulares.
 // Onde ele é usado: aparece na barra superior das telas de paciente e psicólogo.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
@@ -14,10 +14,11 @@ import { ConfirmDialog } from '../confirmar-dialogo';
 export function MenuSanduiche() {
     // Guarda se as opções de navegação estão visíveis.
     const [aberto, setAberto] = useState(false);
+    const navegacaoPendente = useRef<ReturnType<typeof setTimeout> | null>(null);
     const router = useRouter();
     const caminho = usePathname();
     const insets = useSafeAreaInsets();
-    const { user, signOut } = useAuth();
+    const { user, signOut, statusCrp } = useAuth();
     const { mostrarErro } = useAlerta();
     // Guarda a contagem que aparece sobre o atalho de solicitações.
     const [pendentes, setPendentes] = useState(0);
@@ -25,15 +26,21 @@ export function MenuSanduiche() {
     const [confirmarRestauracao, setConfirmarRestauracao] = useState(false);
     const psicologo = user?.role === 'PSYCHOLOGIST';
 
+    useEffect(() => () => {
+        if (navegacaoPendente.current) clearTimeout(navegacaoPendente.current);
+    }, []);
+
     // Cada papel recebe somente os atalhos das telas que pode abrir.
-    const links = psicologo
+    const links = psicologo && statusCrp === 'VERIFICADO'
         ? [
             { label: 'Minha agenda', icon: 'calendar-outline' as const, rota: '/psicologo' as const },
             { label: 'Solicitações', icon: 'mail-unread-outline' as const, rota: '/psicologo/solicitacoes' as const },
             { label: 'Meu perfil', icon: 'person-outline' as const, rota: '/psicologo/perfil' as const },
             { label: 'Rede de psicólogos', icon: 'globe-outline' as const, rota: '/psicologo/rede' as const },
         ]
-        : [
+        : psicologo
+            ? [{ label: 'Verificação profissional', icon: 'shield-checkmark-outline' as const, rota: '/psicologo/verificacao' as const }]
+            : [
             { label: 'Início', icon: 'home-outline' as const, rota: '/paciente' as const },
             { label: 'Minhas consultas', icon: 'calendar-outline' as const, rota: '/paciente/consultas' as const },
             { label: 'Meu perfil', icon: 'person-outline' as const, rota: '/paciente/perfil' as const },
@@ -42,11 +49,11 @@ export function MenuSanduiche() {
     // Conta solicitações pendentes para mostrar o badge no atalho da navbar do psicólogo.
     // Atualiza o contador de solicitações do psicólogo ao montar o menu.
     useEffect(() => {
-        if (!psicologo || !user) return;
+        if (!psicologo || statusCrp !== 'VERIFICADO' || !user) return;
         getMyAppointmentsAsPsychologist(user.userId)
             .then((consultas) => setPendentes(consultas.filter((consulta) => consulta.status === 'PENDING').length))
             .catch((erro) => mostrarErro('Erro ao carregar solicitações', motivoDoErro(erro)));
-    }, [psicologo, user, mostrarErro]);
+    }, [psicologo, statusCrp, user, mostrarErro]);
 
     // Limpa o armazenamento e volta à tela de acesso para carregar os exemplos ao entrar novamente.
     async function restaurarExemplos() {
@@ -62,7 +69,7 @@ export function MenuSanduiche() {
     return (
         <>
             {/* Este atalho abre a lista de solicitações pela rota do psicólogo. */}
-            {psicologo && (
+            {psicologo && statusCrp === 'VERIFICADO' && (
             <Pressable accessibilityRole="button" accessibilityLabel="Solicitações de consulta" onPress={() => router.push('/psicologo/solicitacoes' as never)} style={({ pressed }) => [styles.requestShortcut, pressed && styles.pressed]}>
                     <Ionicons name={caminho.endsWith('/solicitacoes') ? 'mail-unread' : 'mail-unread-outline'} size={22} color={COLORS.card} />
                     {pendentes > 0 && <View style={styles.shortcutBadge}><Text style={styles.badgeText}>{pendentes}</Text></View>}
@@ -93,7 +100,14 @@ export function MenuSanduiche() {
                                 key={link.rota}
                                 accessibilityRole="button"
                                 style={({ pressed }) => [styles.item, pressed && styles.pressed]}
-                                onPress={() => { /* Fecha o menu antes de navegar para a rota. */ setAberto(false); router.push(link.rota as never); }}
+                                onPress={() => {
+                                    setAberto(false);
+                                    if (navegacaoPendente.current) clearTimeout(navegacaoPendente.current);
+                                    navegacaoPendente.current = setTimeout(() => {
+                                        router.push(link.rota as never);
+                                        navegacaoPendente.current = null;
+                                    }, 300);
+                                }}
                             >
                                 <View style={styles.navItemIcon}>
                                     <Ionicons name={caminho === link.rota && link.rota === '/psicologo/solicitacoes' ? 'mail-unread' : link.icon} size={22} color={caminho === link.rota ? COLORS.primaryDark : COLORS.primary} />

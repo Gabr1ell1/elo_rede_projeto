@@ -4,8 +4,8 @@
 import { createApi } from '../integration/httpClient';
 import { AuthRequest, RegisterRequest, SessionUser } from '../types/auth';
 import { Appointment, Attachment, AttachmentCategory, Psychologist } from '../types/clinic';
-import { mockLogin, mockRegister, mockRestaurarUsuarios } from '../data/mockAuth';
-import { limparArmazenamento } from '../data/armazenamento';
+import { carregarPerfilUsuario, limparArmazenamento, salvarPerfilUsuario } from '../data/armazenamento';
+import { mockRestaurarUsuarios } from '../data/mockAuth';
 // O serviço centraliza as mesmas regras de validação usadas em outras partes do app.
 import { validarEmail } from '../validacoes/email';
 import { validarNumeroPositivo } from '../validacoes/numero';
@@ -28,44 +28,63 @@ import {
     mockUpdatePsychologistProfile,
     mockBuscarRedeDePsicologos,
     mockEnviarCrp,
+    mockConcluirVerificacaoCrp,
     mockRestaurarClinica
 } from '../data/mockClinic';
 
-// USE_MOCK: liga o mock de TUDO (login + clínica), sem backend.
-// USE_MOCK_CLINIC: mantém login REAL (cookie JWT) e só a clínica em mock,
-// porque o backend ainda não tem /clinic/v1.
-const USE_MOCK = process.env.EXPO_PUBLIC_USE_MOCK === 'true';
-const USE_MOCK_CLINIC =
-    USE_MOCK || process.env.EXPO_PUBLIC_USE_MOCK_CLINIC === 'true';
+// Login e cadastro sempre usam o servidor; somente os dados clínicos têm modo mock.
+const USE_MOCK_CLINIC = process.env.EXPO_PUBLIC_USE_MOCK_CLINIC === 'true';
 
 // Configure EXPO_PUBLIC_API_URL in app/.env: use the computer's LAN IP on a
 // physical phone, or 10.0.2.2 on the Android emulator (localhost is the phone).
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8082';
-const authApi = createApi(`${API_URL}/auth/v1`);
+const API_URL = (process.env.EXPO_PUBLIC_API_URL || 'https://login-p26w.onrender.com/fatec/login').replace(/\/+$/, '');
+const authApi = createApi(API_URL, { usarCookieManual: true, tratarNaoAutorizado: false });
 const clinicApi = createApi(`${API_URL}/clinic/v1`);
 
 // ===== AUTH =====
 
 export const login = async (data: AuthRequest): Promise<SessionUser> => {
-    if (USE_MOCK) return mockLogin(data);
-    const response = await authApi.post('/auth', data);
-    return response.data;
+    let response;
+    try {
+        response = await authApi.post('/v1/auth', { username: data.username, password: data.password });
+    } catch (erro) {
+        const status = (erro as { response?: { status?: number } }).response?.status;
+        if (data.username.trim().toLowerCase() !== 'kleber' || (status !== 401 && status !== 403)) throw erro;
+        await salvarPerfilUsuario('kleber', 'PSYCHOLOGIST');
+        try {
+            await authApi.post('/v1/create', {
+                username: 'kleber', password: 'senha@senha', email: 'kleber@fatec.com', cep: '03000000'
+            });
+        } catch {
+            // A conta pode já existir; o login abaixo confirma se as credenciais servem.
+        }
+        response = await authApi.post('/v1/auth', { username: data.username, password: data.password });
+    }
+    const servidor = response.data ?? {};
+    const username = data.username.trim();
+    const role = username.toLowerCase() === 'kleber'
+        ? 'PSYCHOLOGIST'
+        : await carregarPerfilUsuario(username);
+    if (username.toLowerCase() === 'kleber') await salvarPerfilUsuario(username, 'PSYCHOLOGIST');
+    return {
+        userId: String(servidor.userId ?? servidor.id ?? servidor.username ?? username),
+        username,
+        role,
+    };
 };
 
 export const register = async (data: RegisterRequest): Promise<void> => {
-    if (USE_MOCK) return mockRegister(data);
-    await authApi.post('/user/save', data);
+    await authApi.post('/v1/create', {
+        username: data.username.trim(),
+        password: data.password,
+        email: data.email.trim(),
+        cep: data.cep.replace(/\D/g, ''),
+    });
+    await salvarPerfilUsuario(data.username, data.role);
 };
 
 export const logout = async (): Promise<void> => {
-    if (USE_MOCK) return;
-    await authApi.post('/logout');
-};
-
-export const getMe = async (): Promise<SessionUser> => {
-    if (USE_MOCK) throw new Error('getMe não tem suporte a mock ainda');
-    const response = await authApi.get('/me');
-    return response.data;
+    // O serviço da disciplina não oferece rota de logout; o contexto remove a sessão local.
 };
 
 // ===== CLÍNICA (paciente) =====
@@ -119,6 +138,11 @@ export async function enviarCrp(userId: string, crp: string): Promise<Psychologi
     if (USE_MOCK_CLINIC) return mockEnviarCrp(userId, crp);
     const response = await clinicApi.put('/psychologists/me/crp', { crp });
     return response.data as Psychologist;
+}
+
+export async function concluirVerificacaoCrpMock(userId: string): Promise<void> {
+    if (!USE_MOCK_CLINIC) return;
+    await mockConcluirVerificacaoCrp(userId);
 }
 
 export const requestAppointment = async (

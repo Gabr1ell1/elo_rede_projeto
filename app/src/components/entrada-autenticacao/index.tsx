@@ -15,6 +15,7 @@ type AuthInputProps = {
   value: string;
   onChangeText: (text: string) => void;
   secureTextEntry?: boolean;
+  keyboardType?: "default" | "email-address" | "numeric";
 };
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
@@ -24,6 +25,7 @@ export function AuthInput({
   value,
   onChangeText,
   secureTextEntry = false,
+  keyboardType = "default",
 }: AuthInputProps) {
   return (
     <View style={styles.container}>
@@ -38,6 +40,7 @@ export function AuthInput({
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
+        keyboardType={keyboardType}
       />
     </View>
   );

@@ -10,6 +10,7 @@ export type AuthRequest = {
 
 export type RegisterRequest = AuthRequest & {
     email: string;
+    cep: string;
     role: Role;
     avatarUrl?: string;
 };
@@ -17,5 +18,5 @@ export type RegisterRequest = AuthRequest & {
 export type SessionUser = {
     userId: string;
     username: string;
-    role: Role;
+    role: Role | null;
 };
