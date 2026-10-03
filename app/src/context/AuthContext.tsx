@@ -11,12 +11,14 @@ import {
 } from "../services/api";
 import { setUnauthorizeHandler } from "../integration/httpClient";
 import { AuthRequest, RegisterRequest, SessionUser } from "../types/auth";
+// Esta função converte erros de serviço em mensagens claras para a tela de acesso.
+import { motivoDoErro } from "./AlertaContext";
 
 type AuthContextData = {
     isAuthenticated: boolean;
     user: SessionUser | null;
     isLoading: boolean;
-    signIn: (data: AuthRequest) => Promise<{ ok: boolean }>;
+    signIn: (data: AuthRequest) => Promise<{ ok: boolean; error?: string }>;
     signUp: (data: RegisterRequest) => Promise<{ ok: boolean; error?: string }>;
     signOut: () => void;
 };
@@ -86,8 +88,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             await persistSession(sessionUser);
             redirectByRole(sessionUser.role);
             return { ok: true };
-        } catch {
-            return { ok: false };
+        } catch (erro) {
+            return { ok: false, error: motivoDoErro(erro) };
         }
     }
 
@@ -96,10 +98,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             await registerApi(data);
             return { ok: true };
-        } catch (err: any) {
+        } catch (err) {
             return {
                 ok: false,
-                error: err.response?.data?.message ?? "Erro desconhecido"
+                error: motivoDoErro(err)
             };
         }
     }

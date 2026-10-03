@@ -32,6 +32,8 @@ import { Avatar } from "../../../../components/avatar";
 import { COLORS } from "../../../../constants/cores";
 // O detalhe da consulta usa os formatadores de data e hora compartilhados.
 import { formatarDia, formatarHora } from "../../../../formatacao/data-hora";
+// Falhas na consulta e em anexos aparecem no alerta global.
+import { useAlerta, motivoDoErro } from "../../../../context/AlertaContext";
 
 const LOGO = require("../../../../../assets/images/elo-logo-branca.png");
 
@@ -71,6 +73,7 @@ export default function AppointmentDetail() {
     const insets = useSafeAreaInsets();
     const { id } = useLocalSearchParams<{ id: string }>();
     const { user, signOut } = useAuth();
+    const { mostrarErro } = useAlerta();
     const [appointment, setAppointment] = useState<Appointment | null>(null);
     const [items, setItems] = useState<Attachment[]>([]);
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
@@ -88,7 +91,8 @@ export default function AppointmentDetail() {
             setAppointment(item);
             setItems(await listAttachments(id, user.userId, "PATIENT"));
         } catch (e) {
-            setError(e instanceof Error ? e.message : "Não foi possível abrir a consulta.");
+            setError("");
+            mostrarErro("Erro ao carregar consulta", motivoDoErro(e));
         } finally {
             setLoading(false);
         }
@@ -133,7 +137,8 @@ export default function AppointmentDetail() {
             await uploadAttachment(id!, file, category, user!.userId);
             await load();
         } catch (e) {
-            setError(e instanceof Error ? e.message : "Falha ao anexar arquivo.");
+            setError("");
+            mostrarErro("Erro ao anexar arquivo", motivoDoErro(e));
         }
     }
 
@@ -145,7 +150,8 @@ export default function AppointmentDetail() {
             await load();
         } catch (e) {
             setDialog(false);
-            setError(e instanceof Error ? e.message : "Não foi possível cancelar.");
+            setError("");
+            mostrarErro("Erro ao cancelar consulta", motivoDoErro(e));
         }
     }
 
@@ -157,7 +163,8 @@ export default function AppointmentDetail() {
             await remove(item.uri);
             await load();
         } catch (e) {
-            setError(e instanceof Error ? e.message : "Não foi possível remover o anexo.");
+            setError("");
+            mostrarErro("Erro ao remover anexo", motivoDoErro(e));
         }
     }
 

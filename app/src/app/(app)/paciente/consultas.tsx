@@ -22,6 +22,8 @@ import { Appointment } from "../../../types/clinic";
 import { COLORS } from "../../../constants/cores";
 // As consultas usam os mesmos formatadores de data e hora compartilhados.
 import { formatarDia, formatarHora } from "../../../formatacao/data-hora";
+// Falhas ao carregar consultas são mostradas pelo alerta global.
+import { useAlerta, motivoDoErro } from "../../../context/AlertaContext";
 
 const LOGO = require("../../../../assets/images/elo-logo-branca.png");
 
@@ -45,6 +47,7 @@ export default function PatientAppointments() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { user, signOut } = useAuth();
+    const { mostrarErro } = useAlerta();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [loading, setLoading] = useState(true);
@@ -56,13 +59,7 @@ export default function PatientAppointments() {
         if (!user) return;
         getMyAppointmentsAsPatient(user.userId)
             .then(setAppointments)
-            .catch((reason) =>
-                setError(
-                    reason instanceof Error
-                        ? reason.message
-                        : "Não foi possível carregar suas consultas."
-                )
-            )
+            .catch((erro) => mostrarErro("Erro ao carregar consultas", motivoDoErro(erro)))
             .finally(() => setLoading(false));
     }, [user]);
 

@@ -26,6 +26,8 @@ import { COLORS } from "../../../constants/cores";
 // Os contatos usam funções comuns para limpar telefones e montar links de WhatsApp.
 import { somenteDigitos } from "../../../formatacao/telefone";
 import { montarLinkWhatsapp } from "../../../links/whatsapp";
+// Falhas ao carregar a rede ou abrir um contato são mostradas pelo alerta global.
+import { useAlerta, motivoDoErro } from "../../../context/AlertaContext";
 
 // A logo precisa subir uma pasta a mais que o caminho das constantes.
 const LOGO_REDE = require("../../../../assets/images/elo-logo-branca.png");
@@ -35,6 +37,7 @@ export default function RedeDePsicologos() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { user, signOut } = useAuth();
+    const { mostrarErro } = useAlerta();
 
     // Esta lista contém apenas colegas visíveis e diferentes do usuário logado.
     const [listaPsicologos, setListaPsicologos] = useState<Psychologist[]>([]);
@@ -59,7 +62,8 @@ export default function RedeDePsicologos() {
             const psicologos = await buscarRedeDePsicologos(user.userId);
             setListaPsicologos(psicologos);
         } catch (motivo) {
-            setErro(motivo instanceof Error ? motivo.message : "Não foi possível carregar a rede.");
+            setErro("");
+            mostrarErro("Erro ao carregar psic?logos", motivoDoErro(motivo));
         } finally {
             setCarregando(false);
         }
@@ -85,8 +89,9 @@ export default function RedeDePsicologos() {
         setErro("");
         try {
             await Linking.openURL(endereco);
-        } catch {
-            setErro("Não foi possível abrir esse contato. Tente novamente.");
+        } catch (motivo) {
+            setErro("");
+            mostrarErro("Erro ao abrir contato", motivoDoErro(motivo));
         }
     }
 

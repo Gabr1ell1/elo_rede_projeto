@@ -20,6 +20,8 @@ import { AuthInput } from "../../components/entrada-autenticacao";
 import { Role } from "../../types/auth";
 import { COLORS } from "../../constants/cores";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+// Esta tela mostra falhas de cadastro no alerta compartilhado.
+import { useAlerta } from "../../context/AlertaContext";
 
 const LOGO = require("../../../assets/images/elo-logo-branca.png");
 
@@ -36,7 +38,7 @@ export default function Register() {
   const [role, setRole] = useState<Role>("PATIENT");
 
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
-  const [error, setError] = useState("");
+  const { mostrarErro } = useAlerta();
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
   const [success, setSuccess] = useState(false);
 
@@ -46,7 +48,6 @@ export default function Register() {
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
   async function handleRegister() {
-    setError("");
     const result = await signUp({
       username,
       email,
@@ -60,7 +61,7 @@ export default function Register() {
         router.replace("/(auth)");
       }, 1200);
     } else {
-      setError(result.error ?? "Erro ao cadastrar");
+      mostrarErro("Erro de cadastro", result.error ?? "Não foi possível cadastrar sua conta.");
     }
   }
 
@@ -170,12 +171,6 @@ export default function Register() {
           </View>
 
           {/* ERRO */}
-
-          {error ? (
-            <Text style={styles.errorBox}>
-              {error}
-            </Text>
-          ) : null}
 
           {/* SUCESSO */}
 

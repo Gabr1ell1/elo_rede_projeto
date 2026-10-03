@@ -23,6 +23,8 @@ import { Avatar } from "../../../components/avatar";
 import { COLORS } from "../../../constants/cores";
 // A agenda importa os formatadores compartilhados para manter datas consistentes.
 import { formatarDia, formatarHora } from "../../../formatacao/data-hora";
+// Falhas da agenda são mostradas pelo alerta global.
+import { useAlerta, motivoDoErro } from "../../../context/AlertaContext";
 
 const LOGO = require("../../../../assets/images/elo-logo-branca.png");
 
@@ -46,6 +48,7 @@ export default function PsychologistAgenda() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { user, signOut } = useAuth();
+    const { mostrarErro } = useAlerta();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [loading, setLoading] = useState(true);
@@ -59,11 +62,7 @@ export default function PsychologistAgenda() {
         setLoading(true);
         getMyAppointmentsAsPsychologist(user.userId)
             .then(setAppointments)
-            .catch((reason) =>
-                setError(
-                    reason instanceof Error ? reason.message : "Não foi possível carregar a agenda."
-                )
-            )
+            .catch((erro) => mostrarErro("Erro ao carregar agenda", motivoDoErro(erro)))
             .finally(() => setLoading(false));
     }, [user]);
 
@@ -79,7 +78,8 @@ export default function PsychologistAgenda() {
             await updateAppointmentStatus(id, status, user!.userId);
             load();
         } catch (e) {
-            setError(e instanceof Error ? e.message : "Não foi possível atualizar a consulta.");
+            setError("");
+            mostrarErro("Erro ao atualizar consulta", motivoDoErro(e));
         }
     }
 

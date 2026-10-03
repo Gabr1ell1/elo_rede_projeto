@@ -24,6 +24,8 @@ import { Avatar } from "../../../components/avatar";
 import { COLORS } from "../../../constants/cores";
 // A tela usa as funções comuns para exibir preços com o mesmo padrão em todo o app.
 import { formatarPreco } from "../../../formatacao/preco";
+// Falhas ao carregar profissionais são mostradas pelo alerta global.
+import { useAlerta, motivoDoErro } from "../../../context/AlertaContext";
 
 // Coloque o arquivo em: app/assets/images/elo-logo-branca.png
 const LOGO = require("../../../../assets/images/elo-logo-branca.png");
@@ -32,6 +34,7 @@ const LOGO = require("../../../../assets/images/elo-logo-branca.png");
 export default function PatientHome() {
     const router = useRouter();
     const { user, signOut } = useAuth();
+    const { mostrarErro } = useAlerta();
     const insets = useSafeAreaInsets();
     const [psychologists, setPsychologists] = useState<Psychologist[]>([]);
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
@@ -43,7 +46,7 @@ export default function PatientHome() {
     useEffect(() => {
         getPsychologists()
             .then(setPsychologists)
-            .catch(() => setPsychologists([]))
+            .catch((erro) => { setPsychologists([]); mostrarErro("Erro ao carregar psicólogos", motivoDoErro(erro)); })
             .finally(() => setLoading(false));
     }, []);
 

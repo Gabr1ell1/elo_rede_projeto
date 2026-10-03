@@ -7,6 +7,8 @@ import { Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getAvatar, uploadAvatar } from '../../services/api';
 import { pickDocument, pickImage, takePhoto, save } from '../../services/fileStorage';
+// A troca e o carregamento da foto mostram falhas pelo alerta global.
+import { useAlerta, motivoDoErro } from '../../context/AlertaContext';
 
 type Source = 'camera' | 'gallery' | 'file';
 
@@ -33,6 +35,7 @@ export function Avatar({
     const [error, setError] = useState('');
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [menu, setMenu] = useState(false);
+    const { mostrarErro } = useAlerta();
 
 // Este efeito sincroniza a tela com dados, autenticacao ou ciclo de vida do componente.
     useEffect(() => {
@@ -40,7 +43,7 @@ export function Avatar({
         setImageFailed(false);
         getAvatar(userId)
             .then((value) => setUri(value))
-            .catch(() => {});
+            .catch((erro) => mostrarErro('Erro ao carregar foto de perfil', motivoDoErro(erro)));
     }, [userId]);
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
@@ -69,7 +72,8 @@ export function Avatar({
             setImageFailed(false);
             setUri(next);
         } catch (e) {
-            setError(e instanceof Error ? e.message : 'Não foi possível trocar a foto.');
+            setError('');
+            mostrarErro('Erro ao trocar foto de perfil', motivoDoErro(e));
         }
     }
 
@@ -97,10 +101,7 @@ export function Avatar({
                     </Pressable>
                 )}
             </View>
-
-            {!!error && <Text style={styles.error}>{error}</Text>}
-
-            {editable && (
+{editable && (
                 <Modal visible={menu} transparent animationType="fade" onRequestClose={() => setMenu(false)}>
                     <Pressable style={styles.overlay} onPress={() => setMenu(false)}>
                         <View style={styles.sheet}>

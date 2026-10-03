@@ -25,6 +25,8 @@ import { COLORS } from "../../../../constants/cores";
 // O perfil de profissional e seus horários usam os formatadores compartilhados.
 import { formatarDia, formatarHora } from "../../../../formatacao/data-hora";
 import { formatarPreco } from "../../../../formatacao/preco";
+// Falhas de carregamento e agendamento aparecem no alerta global.
+import { useAlerta, motivoDoErro } from "../../../../context/AlertaContext";
 
 const LOGO = require("../../../../../assets/images/elo-logo-branca.png");
 
@@ -34,6 +36,7 @@ export default function PsychologistProfile() {
     const insets = useSafeAreaInsets();
     const { id } = useLocalSearchParams<{ id: string }>();
     const { user, signOut } = useAuth();
+    const { mostrarErro } = useAlerta();
     const [psychologist, setPsychologist] = useState<Psychologist | null>(null);
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [loading, setLoading] = useState(true);
@@ -48,6 +51,7 @@ export default function PsychologistProfile() {
         if (!id) return;
         getPsychologistById(id)
             .then((p) => setPsychologist(p ?? null))
+            .catch((erro) => mostrarErro("Erro ao carregar psicólogo", motivoDoErro(erro)))
             .finally(() => setLoading(false));
     }, [id]);
 
@@ -77,7 +81,8 @@ export default function PsychologistProfile() {
             router.replace("/paciente/consultas" as any);
         } catch (e) {
             setSelectedSlot(null);
-            setError(e instanceof Error ? e.message : "Não foi possível solicitar a consulta.");
+            setError("");
+            mostrarErro("Erro ao agendar consulta", motivoDoErro(e));
         } finally {
             setRequesting(false);
         }

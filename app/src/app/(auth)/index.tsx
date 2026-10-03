@@ -18,6 +18,8 @@ import { AuthInput } from "../../components/entrada-autenticacao";
 import { useAuth } from "../../context/AuthContext";
 import { COLORS } from "../../constants/cores";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+// Esta tela mostra falhas de autenticação no alerta compartilhado.
+import { useAlerta } from "../../context/AlertaContext";
 
 const LOGO = require("../../../assets/images/elo-logo-branca.png");
 
@@ -29,22 +31,20 @@ export default function Login() {
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
   const [password, setPassword] = useState("");
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
-  const [error, setError] = useState("");
+  const { mostrarErro } = useAlerta();
   const { width } = useWindowDimensions();
   const isMobile = width < 700;
   const insets = useSafeAreaInsets();
 
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
   async function handleLogin() {
-    setError("");
-
     const result = await signIn({
       username,
       password,
     });
 
     if (!result.ok) {
-      setError("Usuário ou senha inválidos");
+      mostrarErro("Erro de login", result.error ?? "Usuário ou senha inválidos.");
     }
 
     // Se der certo, o AuthContext já pode fazer o redirecionamento.
@@ -156,12 +156,6 @@ export default function Login() {
           </View>
 
           {/* ERRO */}
-          {error ? (
-            <Text style={styles.errorBox}>
-              {error}
-            </Text>
-          ) : null}
-
           {/* ESQUECI SENHA */}
           <Pressable style={styles.forgotButton}>
             <Text style={styles.forgotText}>

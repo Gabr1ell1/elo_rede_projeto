@@ -24,6 +24,10 @@ import { useAuth } from "../../../context/AuthContext";
 import { getPsychologistById, updatePsychologistProfile } from "../../../services/api";
 import { Avatar } from "../../../components/avatar";
 import { COLORS } from "../../../constants/cores";
+// A tela usa validações comuns e apresenta erros pelo alerta compartilhado.
+import { validarEmail } from "../../../validacoes/email";
+import { validarNumeroPositivo } from "../../../validacoes/numero";
+import { useAlerta, motivoDoErro } from "../../../context/AlertaContext";
 
 const LOGO = require("../../../../assets/images/elo-logo-branca.png");
 
@@ -32,6 +36,7 @@ export default function PsychologistProfileScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { user, signOut } = useAuth();
+    const { mostrarErro } = useAlerta();
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
     const [specialty, setSpecialty] = useState("");
 // Estes estados guardam valores que mudam durante o uso da tela ou do componente.
@@ -77,6 +82,7 @@ export default function PsychologistProfileScreen() {
                     setVisivelNaRede(p.visibleInNetwork === true);
                 }
             })
+            .catch((erro) => mostrarErro("Erro ao carregar perfil", motivoDoErro(erro)))
             .finally(() => setLoading(false));
     }, [user]);
 
@@ -84,14 +90,12 @@ export default function PsychologistProfileScreen() {
     async function handleSave() {
         if (!user) return;
         const anosNumericos = anosExperiencia.trim() === "" ? undefined : Number(anosExperiencia);
-        if (anosNumericos !== undefined && (!Number.isFinite(anosNumericos) || anosNumericos < 0)) {
-            setSuccess(false);
-            setMessage("Anos de experiência precisa ser um número igual ou maior que zero.");
+        if (anosNumericos !== undefined && !validarNumeroPositivo(anosNumericos)) {
+            mostrarErro("Erro ao salvar perfil", "Anos de experiência precisa ser um número igual ou maior que zero.");
             return;
         }
-        if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-            setSuccess(false);
-            setMessage("Digite um e-mail válido.");
+        if (email.trim() && !validarEmail(email)) {
+            mostrarErro("Erro ao salvar perfil", "Digite um e-mail válido.");
             return;
         }
         setSaving(true);
@@ -111,7 +115,8 @@ export default function PsychologistProfileScreen() {
             setMessage("Perfil atualizado.");
         } catch (error) {
             setSuccess(false);
-            setMessage(error instanceof Error ? error.message : "Não foi possível salvar.");
+            setMessage("");
+            mostrarErro("Erro ao salvar perfil", motivoDoErro(error));
         } finally {
             setSaving(false);
         }

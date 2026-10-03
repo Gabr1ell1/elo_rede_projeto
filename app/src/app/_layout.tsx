@@ -2,6 +2,8 @@
 // Onde ele é usado: src/app/_layout.tsx é importado pelas telas ou componentes correspondentes.
 
 import { AuthProvider, useAuth } from "@/src/context/AuthContext";
+// O provider torna os erros acessíveis a todas as rotas.
+import { AlertaProvider } from "@/src/context/AlertaContext";
 import { Slot, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { TelaAbertura } from "@/src/components/tela-abertura";
@@ -26,8 +28,10 @@ function AppContent() {
 // Esta funcao executa uma acao deste arquivo e mantem a logica desta parte da aplicacao em um so lugar.
 export default function RootLayout() {
     return (
-        <AuthProvider>
-            <AppContent />
-        </AuthProvider>
+        <AlertaProvider>
+            <AuthProvider>
+                <AppContent />
+            </AuthProvider>
+        </AlertaProvider>
     );
 }
