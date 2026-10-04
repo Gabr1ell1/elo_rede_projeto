@@ -28,131 +28,25 @@ O principal objetivo da ELO é:
 
 ---
 
-## 📱 Funcionalidades
 
-A aplicação conta com diferentes funcionalidades para representar o fluxo da plataforma.
+## 📱 Recurso mobile
 
-### 🔐 Autenticação
+Recursos nativos do dispositivo utilizados:
 
-O sistema possui autenticação de usuários utilizando:
+* **Câmera** (`expo-image-picker`): fotografar documentos e exames para anexar às consultas e trocar a foto de perfil. Código em `app/src/services/fileStorage.native.ts` (`takePhoto`). A permissão está declarada em `app/app.json`.
+* **Gravação em pasta escolhida pelo usuário** (Storage Access Framework do Android): ao baixar um laudo ou exame, o usuário escolhe a pasta e o app grava o arquivo ali. Código em `app/src/services/download.ts` (`baixarNoAndroid`).
 
-* Login e senha;
-* Geração de **JWT (JSON Web Token)**;
-* Armazenamento do token por meio de **cookies**;
-* Validação da autenticação para acesso às áreas protegidas da aplicação.
-
-O uso do JWT permite que o backend identifique o usuário autenticado durante as requisições.
-
-### 📋 Atendimento psicológico
-
-O paciente pode utilizar a plataforma para buscar atendimento e visualizar informações relacionadas ao processo de atendimento.
-
-A proposta é que, na modalidade voltada aos psicólogos juniores, o paciente seja direcionado para um profissional pertencente ao grupo validado pela plataforma.
-
-### 📱 Recurso mobile
-
-Como parte dos requisitos da disciplina, a aplicação utiliza um **recurso nativo do dispositivo móvel**.
-
-> **Recurso utilizado: [COLOCAR AQUI — GPS / CÂMERA / OUTRO]**
-
-Esse recurso é integrado à aplicação para adicionar uma funcionalidade que depende do dispositivo móvel.
-
-**Exemplo:** caso seja utilizado GPS, a aplicação poderá utilizar a localização do dispositivo para determinadas funcionalidades relacionadas ao atendimento.
+O projeto **não** utiliza GPS.
 
 ---
 
 ## 💾 Persistência dos dados
 
-Para fins acadêmicos, os dados da aplicação são **mockados**, não sendo utilizado um banco de dados real.
+Para fins acadêmicos, os dados da clínica (psicólogos, consultas, anexos e fotos) são **mockados e salvos no próprio aparelho** com **AsyncStorage** (`app/src/data/armazenamento.ts`).
 
-As informações são armazenadas em arquivos locais, como:
-
-```text
-.txt
-.json
-```
-
-Quando um novo cadastro é realizado, os dados são adicionados ao arquivo utilizado pela aplicação.
-
-Exemplo de fluxo:
-
-```text
-Usuário realiza cadastro
-        ↓
-Aplicação recebe os dados
-        ↓
-Dados são processados
-        ↓
-Dados são salvos no arquivo
-        ↓
-Aplicação pode consultar os dados posteriormente
-```
-
-Essa abordagem permite simular uma camada de persistência sem a necessidade de configurar um banco de dados para o projeto.
-
----
-
-## 🔒 Fluxo de autenticação
-
-O processo de autenticação funciona, de forma simplificada, da seguinte maneira:
-
-```text
-┌──────────────┐
-│    Usuário   │
-└──────┬───────┘
-       │ Login
-       ▼
-┌──────────────┐
-│   Backend    │
-└──────┬───────┘
-       │
-       │ Valida usuário
-       ▼
-┌──────────────┐
-│ Gera JWT     │
-└──────┬───────┘
-       │
-       │ JWT
-       ▼
-┌──────────────┐
-│    Cookie    │
-└──────┬───────┘
-       │
-       │ Requisições autenticadas
-       ▼
-┌──────────────┐
-│ Rotas/API    │
-└──────────────┘
-```
-
-O token é enviado por **cookie**, permitindo que as requisições realizadas posteriormente sejam autenticadas pelo servidor.
-
----
-
-## 🛠️ Tecnologias utilizadas
-
-### Front-end
-
-* React Native
-* Expo
-* JavaScript / TypeScript
-* Expo Router
-
-### Back-end
-
-* Java
-* Spring Boot
-* JWT
-* Cookies
-
-### Persistência
-
-* Arquivos `.txt` / `.json`
-* Dados mockados
-
-### Recursos mobile
-
-* **[GPS / Câmera / outro recurso utilizado]**
+* Login e cadastro usam o serviço de autenticação da disciplina (JWT em cookie).
+* Os arquivos anexados são copiados para a pasta interna do app; os downloads vão para a pasta escolhida pelo usuário.
+* Como os dados ficam em cada aparelho, dois celulares não compartilham consultas.
 
 ---
 
@@ -160,100 +54,37 @@ O token é enviado por **cookie**, permitindo que as requisições realizadas po
 
 ```text
 ELO/
-│
-├── frontend/
-│   ├── app/
-│   ├── components/
-│   ├── constants/
-│   └── ...
-│
-├── backend/
-│   ├── src/
-│   │   └── main/
-│   │       └── java/
-│   └── ...
-│
-├── data/
-│   ├── usuarios.txt
-│   └── ...
-│
+├── app/                      (Expo / React Native: Android e web)
+│   ├── src/app/              telas e rotas (Expo Router)
+│   ├── src/components/       componentes reutilizáveis
+│   ├── src/context/          sessão (AuthContext) e alertas
+│   ├── src/services/         api, download e fileStorage (câmera/arquivos)
+│   ├── src/integration/      httpClient (Axios, cookie)
+│   ├── src/data/             AsyncStorage e dados de demonstração
+│   ├── src/types/            tipos TypeScript
+│   ├── src/formatacao/       datas, preço, telefone
+│   ├── src/validacoes/       CEP, CRP, e-mail, números
+│   └── src/links/            WhatsApp e link da consulta
+├── backend/elo-api/          API Java/Spring Boot própria da equipe (protótipo)
 └── README.md
 ```
 
-*A estrutura pode ser ajustada de acordo com a organização final do projeto.*
-
 ---
 
-## 🚀 Como executar o projeto
-
-### 1. Clonar o repositório
+## 🚀 Como executar
 
 ```bash
-git clone [LINK DO REPOSITÓRIO]
-```
-
-### 2. Acessar o projeto
-
-```bash
-cd ELO
-```
-
-### 3. Executar o backend
-
-```bash
-[COMANDO UTILIZADO NO PROJETO]
-```
-
-### 4. Executar o aplicativo
-
-```bash
+cd app
 npm install
-npm start
+npm run android   # ou: npm run web
 ```
 
-ou, utilizando Expo:
-
-```bash
-npx expo start
-```
-
----
-
-## 📲 APK
-
-O projeto também possui uma versão **APK** para instalação em dispositivos Android, conforme solicitado na disciplina.
-
-> 📦 **APK:** [ADICIONAR LINK/ARQUIVO DO APK]
+Copie `app/.env.example` para `app/.env` e reinicie o Expo após alterar.
 
 ---
 
 ## 🧪 Dados para teste
 
-Como os dados são mockados, o projeto disponibiliza usuários para testar os diferentes fluxos da aplicação.
+**Psicólogo:** usuário `kleber` · senha `senha@senha` (a conta é criada no primeiro acesso)
 
-### Paciente
-
-```text
-E-mail: [EMAIL]
-Senha: [SENHA]
-```
-
-### Psicólogo
-
-E-mail: [EMAIL]
-Senha: [SENHA]
-
-Os dados acima devem ser substituídos pelas credenciais utilizadas no projeto.
-
-## 👩‍💻 Equipe
-
-Projeto desenvolvido por:
-
-[Gabrielly Nascimento Bento]
-
-[Maria Eduarda Monteiro Viana]
-
-📚 Disciplina
-
-Técnicas Avançadas de Programação Web Mobile
-4º semestre
+**Paciente:** crie uma conta na tela de cadastro escolhendo o perfil Paciente.
